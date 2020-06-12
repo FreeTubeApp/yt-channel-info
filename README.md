@@ -1,4 +1,4 @@
-# YouTube Grabber NodeJS Documentation
+# YouTube Channel Info NodeJS Documentation
 This library is designed to receive data from YouTube without accessing the official API.
 <br />
 This method has several advantages:
@@ -9,11 +9,11 @@ But there are also disadvantages:
 * Data acquisition time increases by many times;
 * Any change to the YouTube DOM entails non-working methods of this library.
 
-You must consider this before you use **YouTube Grabber**
+You must consider this before you use **YouTube Channel Info**
 
 ## Installation
 ```
-npm i youtube-grabber-js
+npm i yt-channel-info --save
 ```
 
 ## Tests
