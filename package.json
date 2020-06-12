@@ -1,7 +1,7 @@
 {
-  "name": "youtube-grabber-js",
+  "name": "yt-channel-info",
   "version": "1.0.0",
-  "description": "Youtube grabber without Google API",
+  "description": "Grab YouTube channel information without any official API",
   "main": "index.js",
   "scripts": {
     "test": "mocha --timeout 2000000 test/**/*.spec.js",
