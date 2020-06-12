@@ -1,0 +1,39 @@
+{
+  "name": "youtube-grabber-js",
+  "version": "1.0.0",
+  "description": "Youtube grabber without Google API",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --timeout 2000000 test/**/*.spec.js",
+    "test-channel": "mocha --timeout 2000000 test/resourses/channel.spec.js",
+    "test-playlist": "mocha --timeout 2000000 test/resourses/playlist.spec.js"
+  },
+  "keywords": [
+    "youtube",
+    "youtube-fetch",
+    "youtube-scrapper",
+    "youtube-grabber",
+    "youtube channel",
+    "youtube-channel",
+    "youtube playlist",
+    "youtube-playlist",
+    "youtube without api",
+    "youtube-fetcher"
+  ],
+  "author": "PrestonN",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.18.0",
+    "chai": "^4.2.0",
+    "cheerio": "^1.0.0-rc.3",
+    "html-entities": "^1.2.1",
+    "is-url": "^1.2.4",
+    "mocha": "^6.1.4",
+    "moment": "^2.24.0",
+    "querystring": "^0.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/FreeTubeApp/yt-channel-info"
+  }
+}
