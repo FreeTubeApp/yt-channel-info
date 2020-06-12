@@ -1,3 +1,5 @@
+**NOTE:  This package is not finished.  I would not recommend using this in any production environment until further notice.**
+
 # YouTube Channel Info NodeJS Documentation
 This library is designed to receive data from YouTube without accessing the official API.
 <br />
