@@ -281,3 +281,7 @@ console.log(playlist);
 This is a fork of the `youtube-grabber-js` module created by OlegRom4ig
 
 View the original project on [NPM](https://www.npmjs.com/package/youtube-grabber-js) or [GitLab](https://gitlab.com/olroma123/youtube-grabber-nodejs)
+
+## License
+
+You have explicit permission to use this project as stated in the terms of the [ISC license](https://github.com/FreeTubeApp/yt-channel-info/blob/master/LICENSE).
