@@ -1,1 +1,1 @@
-module.exports = require('./app/youtube-grabber');
+module.exports = require('./app/youtube-grabber')

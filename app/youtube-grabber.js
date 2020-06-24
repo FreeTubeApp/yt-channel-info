@@ -1,259 +1,283 @@
-const YoutubeGrabberValidation = require('./validation');
-const YoutubeGrabberHelper = require('./helper');
-
-const axios = require('axios');
-const isUrl = require('is-url');
-const cheerio = require('cheerio');
-const Entities = require('html-entities').AllHtmlEntities;
-const htmlEntities = new Entities();
+const YoutubeGrabberHelper = require('./helper')
+const queryString = require('querystring')
 
 // Fetchers
-const YoutubeChannelFetcher = require('./fetchers/channel');
-const YoutubePlaylistFetcher = require('./fetchers/playlist');
+const YoutubeChannelFetcher = require('./fetchers/channel')
+const YoutubePlaylistFetcher = require('./fetchers/playlist')
 
 class YoutubeGrabber {
   /**
-  * Check the URL to be an youtube link. This function is not checking for existing the resource
-  * @param { string } url The URL of youtube resource
-  * @returns { boolean } Return TRUE if url is youtube link
-  * */
-  static isYoutubeURLValid(url) {
-    if (!url || typeof url !== 'string' || !url.includes('youtube'))
-    return false;
-
-    if (!isUrl(url)) {
-      return false;
-    }
-
-    return YoutubeGrabberValidation.isResourceIsChannel(url) ||
-    YoutubeGrabberValidation.isResourceIsPlaylist(url) ||
-    YoutubeGrabberValidation.isResourceIsVideo(url);
-  }
-
-  /**
-  * Get type of resource
-  * @param { string } url The URL of youtube resource
-  * @returns { string | null } Return the type of resource or null if resource is invalid
-  * */
-  static getTypeOfResource(url) {
-    if (!YoutubeGrabber.isYoutubeURLValid(url)) return null;
-
-    if (YoutubeGrabberValidation.isResourceIsChannel(url)) return 'channel';
-    if (YoutubeGrabberValidation.isResourceIsPlaylist(url)) return 'playlist';
-    if (YoutubeGrabberValidation.isResourceIsVideo(url)) return 'video';
-
-    return null;
-  }
-
-  /**
-  * Check resource for existing on youtube
-  * @param { string } url The URL of youtube resource
-  * @returns { boolean } Return TRUE if: channel is exists, playlist is exists, video is exists
-  * */
-  static async isResourceExists(url) {
-    if (!YoutubeGrabber.isYoutubeURLValid(url)) return false;
-    return await YoutubeGrabberHelper.isResourceExists(url);
-  }
-
-  /**
   * Get channel information. Full list of channel information you can find in README.md file
-  * @param { string } channelURL A channel url. Should contains at least user or channel word
-  * @param { Object } config An object with parsing option
-  * @param { boolean } config.videos Should parse the videos
-  * @param { boolean } config.playlists Should parse the playlists
+  * @param { string } channelId The channel id to grab data from.
   * @return { Promise<Object> } Return channel information
   * */
-  static async getChannelInfo(channelURL, config = {videos: false, playlists: false}) {
-    const isChannelExists = await YoutubeGrabber.isResourceExists(channelURL);
-    if (!isChannelExists) {
-      return {
-        error: { status: true, reason: 'Channel does not exist or blocked' },
-        info: null
-      };
+  static async getChannelInfo(channelId) {
+    const channelUrl = `https://youtube.com/channel/${channelId}/about?flow=grid&view=0&pbj=1`
+
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(channelUrl)
+
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
     }
 
-    const channelIdRaw = YoutubeGrabberValidation.getChannelIdOrUser(channelURL);
-    if (!channelIdRaw) {
-      return {
-        error: { status: true, reason: 'Wrong URL' },
-        info: null
-      };
+    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    const channelHeaderData = channelPageResponse.data[1].response.header.c4TabbedHeaderRenderer
+    const channelContentsData = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer
+
+    let relatedChannels = []
+
+    if (typeof (channelContentsData.secondaryContents) !== 'undefined') {
+      const featuredChannels = channelContentsData.secondaryContents.browseSecondaryContentsRenderer.contents[0].verticalChannelSectionRenderer.items
+
+      relatedChannels = featuredChannels.map((channel) => {
+        const author = channel.miniChannelRenderer
+        let channelName
+
+        if (typeof (author.title.runs) !== 'undefined') {
+          channelName = author.title.runs[0].text
+        } else {
+          channelName = author.title.simpleText
+        }
+
+        return {
+          author: channelName,
+          authorId: author.channelId,
+          authorUrl: author.navigationEndpoint.browseEndpoint.canonicalBaseUrl,
+          authorThumbnails: author.thumbnail.thumbnails,
+        }
+      })
     }
 
-    if (channelURL.includes('/user/')) {
-      channelURL = `https://youtube.com/user/${channelIdRaw}/`;
-    } else if (channelURL.includes('/channel/')) {
-      channelURL = `https://youtube.com/channel/${channelIdRaw}/`;
+    let subscriberText
+
+    if (typeof (channelHeaderData.subscriberCountText.runs) !== 'undefined') {
+      subscriberText = channelHeaderData.subscriberCountText.runs[0].text
+    } else {
+      subscriberText = channelHeaderData.subscriberCountText.simpleText
     }
 
-    const cookieCollectResponse = await axios.get(channelURL);
+    const subscriberSplit = subscriberText.split(' ')
+    const subscriberMultiplier = subscriberSplit[0].substring(subscriberSplit[0].length - 1).toLowerCase()
 
-    // INFO: In the first request we just collect cookies.
-    // This step is important, because otherwise YouTube will give an error message saying "Choose a language"
-    // And yes, i know that this is bad, but who cares. Am i right? (づ ◕‿◕ )づ
-    // FIXME: Should fix it
-    const channelPageResponse = await axios.get(channelURL);
-
-    const channelPage = cheerio.load(channelPageResponse.data);
-
-    // If youtube print the error
-    // Then return the error object
-    const alerts = channelPage('#alerts .yt-alert-message');
-    if (alerts.length !== 0) {
-      return {
-        error: {
-          status: true,
-          reason: htmlEntities.decode(alerts.html()).trim()
-        },
-        info: null
-      };
+    let subscriberNumber
+    if (typeof (parseFloat(subscriberMultiplier)) === 'undefined') {
+      subscriberNumber = parseFloat(subscriberText.substring(0, subscriberSplit[0].length - 1))
+    } else {
+      subscriberNumber = parseFloat(subscriberSplit[0])
     }
 
-    const channelSubscribers = channelPage('span.subscribed');
+    let subscriberCount
+
+    switch (subscriberMultiplier) {
+      case 'k':
+        subscriberCount = subscriberNumber * 1000
+        break
+      case 'm':
+        subscriberCount = subscriberNumber * 1000000
+        break
+      default:
+        subscriberCount = subscriberNumber
+    }
 
     const channelInfo = {
-      error: {
-        status: false
-      },
-      info: {
-        id: channelPage('meta[itemprop="channelId"]').attr('content'),
-        title: channelPage('meta[itemprop="name"]').attr('content'),
-        description: channelPage('meta[itemprop="description"]').attr('content'),
-        avatarURL: channelPage('link[rel="image_src"]').attr('href'),
-        subscriberCount: channelSubscribers.length !== 0 ? Number.parseInt(channelSubscribers.html().replace('&#xA0;', '')) : false,
-        isConfirmed: channelPage('span.has-badge').length > 0,
-      }
-    };
-
-    // If need to get all videos
-    const channelFetcher = new YoutubeChannelFetcher(channelURL);
-    if (config.videos) {
-      const videosInfo = await channelFetcher.getVideos();
-
-      // If parsed with error
-      if (videosInfo.error.status) {
-        return {
-          error: videosInfo.error,
-          info: null
-        };
-      }
-
-      channelInfo.info.videos = videosInfo.info.videos;
+      author: channelMetaData.title,
+      authorId: channelMetaData.externalId,
+      authorUrl: channelMetaData.vanityChannelUrl,
+      authorBanners: channelHeaderData.banner.thumbnails,
+      authorThumbnails: channelHeaderData.avatar.thumbnails,
+      subscriberText: subscriberText,
+      subscriberCount: subscriberCount,
+      description: channelMetaData.description,
+      isFamilyFriendly: channelMetaData.isFamilySafe,
+      relatedChannels: relatedChannels,
+      allowedRegions: channelMetaData.availableCountryCodes
     }
 
-    // If need to get all playlists
-    if (config.playlists) {
-      const playlistsInfo = await channelFetcher.getPlaylists();
-
-      // If parsed with error
-      if (playlistsInfo.error.status) {
-        return {
-          error: playlistsInfo.error,
-          info: null
-        };
-      }
-
-      channelInfo.info.playlists = playlistsInfo.info.playlists;
-    }
-
-    return channelInfo;
+    return channelInfo
   }
 
-  /**
-  * Get playlist information (with videos)
-  * @param { string } playlistURL A playlist url
-  * @return { Promise<Object> } Return playlist information
-  * */
-  static async getPlaylistInfo(playlistURL) {
-    const isPlaylistsExists = await YoutubeGrabber.isResourceExists(playlistURL);
-    if (!isPlaylistsExists) {
-      return {
-        error: { status: true, reason: 'Playlist does not exist or private' },
-        info: null
-      };
+  static async getChannelVideos (channelId, sortBy = 'newest') {
+    switch (sortBy) {
+      case 'popular':
+        return await YoutubeChannelFetcher.getChannelVideosPopular(channelId)
+      case 'newest':
+        return await YoutubeChannelFetcher.getChannelVideosNewest(channelId)
+      case 'oldest':
+        return await YoutubeChannelFetcher.getChannelVideosOldest(channelId)
+      default:
+        return await YoutubeChannelFetcher.getChannelVideosNewest(channelId)
+    }
+  }
+
+  static async getChannelVideosMore (channelId, continuation) {
+    const urlParams = queryString.stringify({
+      continuation: continuation,
+      ctoken: continuation
+    })
+    const ajaxUrl = `https://www.youtube.com/browse_ajax?${urlParams}`
+
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
+
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
     }
 
-    const playlistId = YoutubeGrabberValidation.getPlaylistId(playlistURL);
-    if (!playlistId) {
-      return {
-        error: { status: true, reason: 'Wrong URL' },
-        info: null
-      };
+    const continuationData = channelPageResponse.data[1].response.continuationContents.gridContinuation
+    const nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
+    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    const channelName = channelMetaData.title
+
+    const channelInfo = {
+      channelId: channelId,
+      channelName: channelName
     }
 
-    playlistURL = `https://www.youtube.com/playlist?list=${playlistId}`;
+    const nextVideos = continuationData.items.map((item) => {
+      return YoutubeGrabberHelper.parseVideo(item, channelInfo)
+    })
 
-    const cookieCollectResponse = await axios.get(playlistURL);
+    return {
+      items: nextVideos,
+      continuation: nextContinuation
+    }
+  }
 
-    // INFO: In the first request we just collect cookies.
-    // This step is important, because otherwise YouTube will give an error message saying "Choose a language"
-    // And yes, i know that this is bad, but who cares. Am i right? (づ ◕‿◕ )づ
-    // FIXME: Should fix it
-    const playlistResponse = await axios.get(playlistURL, {
-      headers: {
-        cookie: cookieCollectResponse.headers['set-cookie'].join(';')
+  static async getChannelPlaylistInfo (channelId, sortBy = 'last') {
+    switch (sortBy) {
+      case 'last':
+        return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId)
+      case 'oldest':
+        return await YoutubePlaylistFetcher.getChannelPlaylistOldest(channelId)
+      case 'newest':
+        return await YoutubePlaylistFetcher.getChannelPlaylistNewest(channelId)
+      default:
+        return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId)
+    }
+  }
+
+  static async getChannelPlaylistsMore (channelId, continuation) {
+    const urlParams = queryString.stringify({
+      continuation: continuation,
+      ctoken: continuation
+    })
+    const ajaxUrl = `https://www.youtube.com/browse_ajax?${urlParams}`
+
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
+
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
+    }
+
+    const continuationData = channelPageResponse.data[1].response.continuationContents.gridContinuation
+    const nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
+    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    const channelName = channelMetaData.title
+
+    const channelInfo = {
+      channelId: channelId,
+      channelName: channelName
+    }
+
+    const nextPlaylists = continuationData.items.filter((item) => {
+      return typeof (item.gridShowRenderer) === 'undefined'
+    }).map((item) => {
+      return YoutubeGrabberHelper.parsePlaylist(item, channelInfo)
+    })
+
+    return {
+      items: nextPlaylists,
+      continuation: nextContinuation
+    }
+  }
+
+  static async searchChannel(channelId, query = '') {
+    const urlParams = queryString.stringify({
+      query: query,
+      flow: 'grid',
+      view: 0,
+      pbj: 1
+    })
+    const ajaxUrl = `https://youtube.com/channel/${channelId}/search?${urlParams}`
+
+    console.log(ajaxUrl)
+
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
+
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
+    }
+
+    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    const channelName = channelMetaData.title
+
+    const channelInfo = {
+      channelId: channelId,
+      channelName: channelName,
+      channelUrl: `https://youtube.com/channel/${channelId}`
+    }
+
+    const searchResults = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[6].expandableTabRenderer.content.sectionListRenderer
+    const searchItems = searchResults.contents
+    const continuation = searchResults.continuations[0].nextContinuationData.continuation
+    console.log(searchItems)
+
+    const parsedSearchItems = searchItems.map((item) => {
+      const obj = item.itemSectionRenderer.contents[0]
+
+      if (typeof (obj.playlistRenderer) !== 'undefined') {
+        console.log(obj)
+        return YoutubeGrabberHelper.parsePlaylist(obj, channelInfo)
+      } else {
+        return YoutubeGrabberHelper.parseVideo(obj, channelInfo)
       }
-    });
+    })
 
-    const playlistPage = cheerio.load(playlistResponse.data);
+    return {
+      continuation: continuation,
+      items: parsedSearchItems
+    }
+  }
 
-    // If youtube print the error
-    // Then return the error object
-    const alerts = playlistPage('#alerts .yt-alert-message');
-    if (alerts.length !== 0) {
-      return {
-        error: {
-          status: true,
-          reason: htmlEntities.decode(alerts.html()).trim()
-        },
-        info: null
-      };
+  static async searchChannelMore (channelId, continuation) {
+    const urlParams = queryString.stringify({
+      continuation: continuation,
+      ctoken: continuation
+    })
+    const ajaxUrl = `https://www.youtube.com/browse_ajax?${urlParams}`
+
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
+
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
     }
 
-    const playlistDetails = playlistPage('.pl-header-details');
-    const playlistOwner = playlistDetails.find('li a')[0];
+    const continuationData = channelPageResponse.data[1].response.continuationContents.sectionListContinuation
+    const nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
+    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    const channelName = channelMetaData.title
 
-    const playlistInfo = {
-      error: {
-        status: false
-      },
+    const channelInfo = {
+      channelId: channelId,
+      channelName: channelName,
+      channelUrl: `https://youtube.com/channel/${channelId}`
+    }
 
-      info: {
-        id: playlistId,
-        title: playlistPage('meta[name="title"]').attr('content'),
-        description: playlistPage('meta[name="description"]').attr('content'),
-        playlistImage: playlistPage('meta[property="og:image"]').attr('content').split('?')[0],
-        videos: {
-          count: parseInt(playlistDetails.find('li')[1].children[0].data)
-        },
-        views: parseInt(playlistDetails.find('li')[2].children[0].data.replace(/\s+/g, '')),
-        channel: {
-          url: `https://youtube.com${playlistOwner.attribs.href}`,
-          name: playlistOwner.children[0].data
-        }
+    const parsedSearchItems = continuationData.contents.map((item) => {
+      const obj = item.itemSectionRenderer.contents[0]
+
+      if (typeof (obj.playlistRenderer) !== 'undefined') {
+        console.log(obj)
+        return YoutubeGrabberHelper.parsePlaylist(obj, channelInfo)
+      } else {
+        return YoutubeGrabberHelper.parseVideo(obj, channelInfo)
       }
-    };
+    })
 
-    // If need to parse the videos
-    const playlistFetcher = new YoutubePlaylistFetcher(playlistURL);
-    let parsed = null;
-    try {
-      parsed = await playlistFetcher.parse();
-    } catch(err) {
-      return {
-        error: {
-          status: true,
-          reason: err.message
-        },
-
-        info: null
-      };
+    return {
+      continuation: nextContinuation,
+      items: parsedSearchItems
     }
-
-    playlistInfo.info.videos.array = parsed.payload;
-
-    return playlistInfo;
   }
 }
 
-module.exports = YoutubeGrabber;
+module.exports = YoutubeGrabber
