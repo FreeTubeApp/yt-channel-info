@@ -1,6 +1,6 @@
 {
   "name": "yt-channel-info",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Grab YouTube channel information without any official API",
   "main": "index.js",
   "scripts": {
@@ -22,7 +22,7 @@
     "youtube without api",
     "youtube-fetcher"
   ],
-  "author": "PrestonN",
+  "author": "PrestonFT",
   "license": "ISC",
   "dependencies": {
     "axios": "^0.18.0",
