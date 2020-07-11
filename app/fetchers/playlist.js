@@ -14,7 +14,7 @@ class PlaylistFetcher {
       return Promise.reject(channelPageResponse.message)
     }
 
-    return await this.parseChannelPlaylistResponse(channelPageResponse, channelId)
+    return await this.parseChannelPlaylistResponse(channelPageResponse)
   }
 
   static async getChannelPlaylistOldest (channelId) {
@@ -25,7 +25,7 @@ class PlaylistFetcher {
       return Promise.reject(channelPageResponse.message)
     }
 
-    return await this.parseChannelPlaylistResponse(channelPageResponse, channelId)
+    return await this.parseChannelPlaylistResponse(channelPageResponse)
   }
 
   static async getChannelPlaylistNewest (channelId) {
@@ -36,12 +36,13 @@ class PlaylistFetcher {
       return Promise.reject(channelPageResponse.message)
     }
 
-    return await this.parseChannelPlaylistResponse(channelPageResponse, channelId)
+    return await this.parseChannelPlaylistResponse(channelPageResponse)
   }
 
-  static async parseChannelPlaylistResponse (response, channelId) {
+  static async parseChannelPlaylistResponse (response) {
     const channelMetaData = response.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
+    const channelId = channelMetaData.externalId
 
     const channelInfo = {
       channelId: channelId,
@@ -50,6 +51,13 @@ class PlaylistFetcher {
     }
 
     const playlistData = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[2].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+
+    if (typeof (playlistData) === 'undefined') {
+      return {
+        continuation: null,
+        items: []
+      }
+    }
 
     const playlistItems = playlistData.items.filter((playlist) => {
       return typeof (playlist.gridShowRenderer) === 'undefined'

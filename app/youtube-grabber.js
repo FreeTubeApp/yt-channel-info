@@ -56,6 +56,12 @@ class YoutubeGrabber {
       subscriberText = channelHeaderData.subscriberCountText.simpleText
     }
 
+    let bannerThumbnails = null
+
+    if (typeof (channelHeaderData.banner) !== 'undefined') {
+      bannerThumbnails = channelHeaderData.banner.thumbnails
+    }
+
     const subscriberSplit = subscriberText.split(' ')
     const subscriberMultiplier = subscriberSplit[0].substring(subscriberSplit[0].length - 1).toLowerCase()
 
@@ -83,7 +89,7 @@ class YoutubeGrabber {
       author: channelMetaData.title,
       authorId: channelMetaData.externalId,
       authorUrl: channelMetaData.vanityChannelUrl,
-      authorBanners: channelHeaderData.banner.thumbnails,
+      authorBanners: bannerThumbnails,
       authorThumbnails: channelHeaderData.avatar.thumbnails,
       subscriberText: subscriberText,
       subscriberCount: subscriberCount,
@@ -109,7 +115,7 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelVideosMore (channelId, continuation) {
+  static async getChannelVideosMore (continuation) {
     const urlParams = queryString.stringify({
       continuation: continuation,
       ctoken: continuation
@@ -126,6 +132,7 @@ class YoutubeGrabber {
     const nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
+    const channelId = channelMetaData.externalId
 
     const channelInfo = {
       channelId: channelId,
@@ -155,7 +162,7 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelPlaylistsMore (channelId, continuation) {
+  static async getChannelPlaylistsMore (continuation) {
     const urlParams = queryString.stringify({
       continuation: continuation,
       ctoken: continuation
@@ -172,10 +179,12 @@ class YoutubeGrabber {
     const nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
+    const channelId = channelMetaData.externalId
 
     const channelInfo = {
       channelId: channelId,
-      channelName: channelName
+      channelName: channelName,
+      channelUrl: `https://youtube.com/channel/${channelId}`
     }
 
     const nextPlaylists = continuationData.items.filter((item) => {
@@ -199,8 +208,6 @@ class YoutubeGrabber {
     })
     const ajaxUrl = `https://youtube.com/channel/${channelId}/search?${urlParams}`
 
-    console.log(ajaxUrl)
-
     const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
 
     if (channelPageResponse.error) {
@@ -218,14 +225,24 @@ class YoutubeGrabber {
 
     const searchResults = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[6].expandableTabRenderer.content.sectionListRenderer
     const searchItems = searchResults.contents
-    const continuation = searchResults.continuations[0].nextContinuationData.continuation
-    console.log(searchItems)
+
+    let continuation = null
+
+    if (typeof (searchResults.continuation) !== 'undefined') {
+      continuation = searchResults.continuations[0].nextContinuationData.continuation
+    }
+
+    if (typeof (searchItems[0].itemSectionRenderer.contents[0].messageRenderer) !== 'undefined') {
+      return {
+        continuation: null,
+        items: []
+      }
+    }
 
     const parsedSearchItems = searchItems.map((item) => {
       const obj = item.itemSectionRenderer.contents[0]
 
       if (typeof (obj.playlistRenderer) !== 'undefined') {
-        console.log(obj)
         return YoutubeGrabberHelper.parsePlaylist(obj, channelInfo)
       } else {
         return YoutubeGrabberHelper.parseVideo(obj, channelInfo)
@@ -238,7 +255,7 @@ class YoutubeGrabber {
     }
   }
 
-  static async searchChannelMore (channelId, continuation) {
+  static async searchChannelMore (continuation) {
     const urlParams = queryString.stringify({
       continuation: continuation,
       ctoken: continuation
@@ -255,6 +272,7 @@ class YoutubeGrabber {
     const nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
+    const channelId = channelMetaData.externalId
 
     const channelInfo = {
       channelId: channelId,
@@ -266,7 +284,6 @@ class YoutubeGrabber {
       const obj = item.itemSectionRenderer.contents[0]
 
       if (typeof (obj.playlistRenderer) !== 'undefined') {
-        console.log(obj)
         return YoutubeGrabberHelper.parsePlaylist(obj, channelInfo)
       } else {
         return YoutubeGrabberHelper.parseVideo(obj, channelInfo)

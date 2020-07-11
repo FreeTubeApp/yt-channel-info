@@ -23,7 +23,7 @@ class YoutubeGrabberHelper {
     } catch (e) {
       return {
         error: true,
-        essage: e
+        message: e
       }
     }
   }
@@ -33,7 +33,11 @@ class YoutubeGrabberHelper {
     const channelName = channelMetaData.title
     const channelVideoData = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
 
-    const continuation = channelVideoData.continuations[0].nextContinuationData.continuation
+    let continuation = null
+
+    if (typeof (channelVideoData.continuations) !== 'undefined') {
+      continuation = channelVideoData.continuations[0].nextContinuationData.continuation
+    }
 
     const channelInfo = {
       channelId: channelId,
@@ -139,7 +143,6 @@ class YoutubeGrabberHelper {
       title = playlist.title.runs[0].text
       videoCount = parseInt(playlist.videoCountShortText.simpleText)
     }
-    console.log(playlist)
 
     return {
       title: title,
