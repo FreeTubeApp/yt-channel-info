@@ -1,7 +1,5 @@
-**NOTE:  This package is not finished.  I would not recommend using this in any production environment until further notice.**
-
 # YouTube Channel Info NodeJS Documentation
-This library is designed to receive data from YouTube without accessing the official API.
+This library is designed to receive channel data from YouTube without accessing the official API.
 <br />
 This method has several advantages:
 * No API key is required, which you should put next to your code;
@@ -18,265 +16,186 @@ You must consider this before you use **YouTube Channel Info**
 npm i yt-channel-info --save
 ```
 
+## Usage
+
+```javascript
+// If using require
+const ytch = require('yt-channel-info')
+
+// If using import
+import ytch from 'yt-channel-info'
+```
+
+## API
+
+**getChannelInfo(channelId)**
+
+Returns information about a given channel ID.
+
+```javascript
+const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+
+ytch.getChannelInfo(channelId).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+
+// Response object
+{
+   author: String,
+   authorId: String,
+   authorUrl: String,
+   authorBanners: Array[Object], // Will return null if none exist
+   authorThumbnails: Array[Object], // Will return null if none exist
+   subscriberText: String,
+   subscriberCount: Integer,
+   description: String,
+   isFamilyFriendly: Boolean,
+   relatedChannels: Array[Object],
+   allowedRegions: Array[String]
+}
+```
+
+**getChannelVideos(channelId, [sortBy])**
+
+Grabs videos from a given channel ID.
+
+ - `newest` - Grabs videos from a channel sorted by newest / most recently uploaded (Default option if none given)
+ - `oldest` - Grabs videos from a channel sorted by oldest videos
+ - `popular` - Grabs videos from a channel sorted by the most popular (Highest amount of views)
+ 
+ ```javascript
+ const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+ const sortBy = 'newest'
+
+ytch.getChannelVideos(channelId, sortBy).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   items: Array[Object],
+   continuation: String // Will return null if no more results can be found.  Used with getChannelVideosMore()
+ }
+ ```
+ 
+ **getChannelVideosMore(continuation)**
+ 
+ Grabs more videos within a channel.  Uses the continuation string returned from `getChannelVideos()` or from past calls to `getChannelVideosMore()`.
+ 
+  ```javascript
+ const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
+ 
+ytch.getChannelInfoMore(continuation).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object 
+ {
+   items: Array[Object],
+   continuation: String // Will return null if no more results can be found.  Used with getChannelVideosMore()
+ }
+ ```
+ 
+ **getChannelPlaylistInfo(channelId, [sortBy])**
+ 
+ Grabs playlist information of a given channel ID.
+ 
+ - `last` - Grabs playlists from a channel sorted by the most recently updated playlist (Default option if none given)
+ - `oldest` - Grabs playlists from a channel sorted by the creation date (oldest first)
+ - `newest` - Grabs playlists from a channel sorted by the creation date (newest first)
+ 
+  ```javascript
+const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+const sortBy = 'last'
+
+ytch.getChannelPlaylistInfo(channelId, sortBy).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   items: Array[Object],
+   continuation: String // Will return null if no more results can be found.  Used with getChannelPlaylistsMore()
+ }
+ ```
+ 
+  **getChannelPlaylistsMore(continuation)**
+ 
+ Grabs more playlists within a channel.  Uses the continuation string returned from `getChannelPlaylists()` or from past calls to `getChannelPlaylistsMore()`.
+ 
+  ```javascript
+const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
+ 
+ytch.getChannelPlaylistsMore(continuation).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   items: Array[Object],
+   continuation: String // Will return null if no more results can be found.  Used with getChannelPlaylistsMore()
+ }
+ ```
+ 
+ **searchChannel(channelId, query)**
+ 
+ Searchs for videos and playlists of a given channelId based on the given query
+ 
+   ```javascript
+const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+const query = 'linux'
+
+ytch.searchChannel(channelId, query).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   items: Array[Object],
+   continuation: String // Will return null if no more results can be found.  Used with searchChannelMore()
+ }
+ ```
+ 
+  **searchChannelMore(continuation)**
+ 
+ Grabs more search results within a channel.  Uses the continuation string returned from `searchChannel()` or from past calls to `searchChannelMore()`.
+ 
+  ```javascript
+const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
+ 
+ytch.searchChannelMore(continuation).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   items: Array[Object],
+   continuation: String // Will return null if no more results can be found.  Used with searchChannelMore()
+ }
+ ```
+
 ## Tests
-Tests are written with mocha.  
-Since receiving data directly from the site takes a lot of time, you should make sure that the tests have enough time for execution.  
 
-You can run tests via **npm run**
-```
-npm run test
-```
-With this method you do not need to configure anything.  
-But if you want to start test directly from the **test/** folder you need to provide additional mocha params
-```
---timeout 20000
-```
+Tests and code standards are still in the process of being created.  Check back later for information on how tests should be performed.
 
-Available tests:  
-* All tests: **npm test**
-* Channel parser test: **npm run test-channel**
-* Playlist parser test: **npm run test-playlist**
+## Contribution
 
-## Features
-1) [URL validation](#1-url-validation)
-    * [Check for YouTube URL](#11-check-for-youtube-url)
-    * [Get type of resource](#12-get-type-of-resource)
-    * [Check for existence of resource](#13-check-for-existence-of-resource)
-2) [Error handling](#2-error-handling)
-3) [Channel](#3-channel)
-    * [Get basic channel information](#31-get-basic-channel-information)
-    * [Get uploaded videos](#32-get-uploaded-videos)
-    * [Get playlists](#33-get-playlists)
-4) Playlist
-    * [Get playlist information](#41-get-playlist-information)
-
-### 1. URL validation
-#### 1.1. Check for YouTube URL
-The method **isYoutubeURLValid(url)** checks the link:
-* Is string is the URL
-* Is URL contains YouTube
-* Is resource is channel, playlist or video
-
-**Example:**
-```javascript
-const ytch = require('yt-channel-info');
-
-const link = 'https://www.youtube.com/channel/UCsBjURrPoezykLs9EqgamOA';
-if (ytch.isYoutubeURLValid(link)) {
-  console.log('Valid');
-} else {
-  console.log('Not valid');
-}
-```
-
-### 1.2. Get type of resource
-The method **getTypeOfResource(url)** returns the type of resource or null if an invalid URL is passed.
-<br/><br/>
-Available resources:
-* channel
-* playlist
-* video
-
-**Example:**
-```javascript
-const ytch = require('yt-channel-info');
-
-const link = 'https://www.youtube.com/channel/UCsBjURrPoezykLs9EqgamOA';
-const type = ytch.getTypeOfResource(link);
-
-console.log(type);    // "channel"
-```
-
-### 1.3. Check for existence of resource
-The method **isResourceExists(url)** not only verifies the correctness of the URL, but also checks the existence of the resource on YouTube
-
-**Example:**
-```javascript
-const ytch = require('yt-channel-info');
-
-const link = 'https://www.youtube.com/channel/UCsBjURrPoezykLs9EqgamOA';
-if (ytch.isResourceExists(link)) {
-  console.log('Valid and Exists');
-} else {
-  console.log('No valid OR not exists');
-}
-```
-
-### 2. Error handling
-Each method that will be described later returns not only information, but also errors.
-Here is a sample return pattern for almost any method:
-```json
-{
-  "error": {
-    "status": true | false,
-    "reason?": "Textual representation of the error",
-    "payload?": "Some additional information about error"
-  },
-
-  "info": {
-
-  }
-}
-```
-
-Let's describe this:  
-1) **error** field - object with error information;  
-    1.1.) **error.status** - (boolean) Describes whether an error has occurred;  
-    1.2.) **error.reason** - (optional)(string) This field is present only if the status field is true. Describes the error;  
-    1.3.) **error.payload** - (optional)(object | string | null) Additional error information. Not always present
-
-### 3. Channel
-#### 3.1. Get basic channel information
-Method **getChannelInfo(url)** can provide you a public channel information. The method also has options, but more on that later.
-
-```javascript
-const ytch = require('yt-channel-info');
-
-const channelURL = 'https://www.youtube.com/channel/UCsBjURrPoezykLs9EqgamOA';
-const channel = ytch.getChannelInfo(channelURL);
-console.log(channel);
-/*
-{
-  error: {
-    status: false
-  },
-
-  info: {
-    id: 'UCsBjURrPoezykLs9EqgamOA',
-    title: string,
-    description: string,
-    avatarURL: string,
-    subscriberCount: number | false,
-    isConfirmed: boolean
-  }
-}
-*/
-```
-
-#### 3.2. Get uploaded videos
-The method also has **config** param. This parameter is responsible for what additional data will be obtained.
-```javascript    
-{    
-  "videos":    true | false,   // Default: false    
-  "playlists": true | false    // Default: false    
-}   
-```
-
-To get all videos from channel:
-```javascript
-const ytch = require('yt-channel-info');
-
-const channelURL = 'https://www.youtube.com/channel/UCsBjURrPoezykLs9EqgamOA';
-const channel = ytch.getChannelInfo(channelURL, {
-  videos: true
-});
-
-console.log(channel);
-/*
-  {
-      error: {
-          status: false
-      },
-      info: {
-          id: 'UCsBjURrPoezykLs9EqgamOA',
-          title: string,
-          description: string,
-          avatarURL: string,
-          subscriberCount: number | false - If subscribers is private then it false,    
-          isConfirmed: boolean,
-          videos: [
-              {
-                  id: string,
-                  title: string,
-                  youtubeUrl: string,
-                  thumbnail: string,
-                  dateCreated: Date
-              }
-        ]
-      }
-    }
-*/
-```
-
-#### 3.3. Get playlists
-To get all channel's playlists:
-```javascript
-const ytch = require('yt-channel-info');
-
-const channelURL = 'https://www.youtube.com/channel/UCsBjURrPoezykLs9EqgamOA';
-const channel = ytch.getChannelInfo(channelURL, {
-  playlists: true
-});
-
-console.log(channel);
-/*
-  {
-      error: {
-          status: false
-      },
-      info: {
-          id: 'UCsBjURrPoezykLs9EqgamOA',
-          title: string,
-          description: string,
-          avatarURL: string,
-          subscriberCount: number | false - If subscribers is private then it false,    
-          isConfirmed: boolean,
-          playlists: [
-              {
-                  id: string,
-                  url: string,
-                  title: string,
-                  thumbnail: string,
-                  videosCount: number
-              }
-        ]
-      }
-    }
-*/
-```
-
-### 4. Playlist
-#### 4.1. Get playlist information
-The method **getPlaylistInfo(url)** provide the basic playlist information with videos
-
-```javascript
-const ytch = require('yt-channel-info');
-
-const playlistURL = 'https://www.youtube.com/playlist?list=PLfMzBWSH11xaZvhv1X5Fq1H-oMdnAtG6k';
-const playlist = ytch.getPlaylistInfo(playlistURL);
-console.log(playlist);
-/*
-{
-  error: {
-    status: false
-  },
-
-  info: {
-    id: "PLfMzBWSH11xaZvhv1X5Fq1H-oMdnAtG6k",
-    title: "string",
-    description: "string",
-    playlistImage: "string",
-    videos: {
-      count: number
-      payload: [
-        {
-          id: "string",
-          youtubeUrl: "string",
-          title: "string",
-          thumbnail: "string",
-          duration: "string"
-        }
-      ]
-    },
-    views: number,
-    channel: {
-      url: "string",
-      name: "string"
-    }
-  }
-}
-*/
-```
+PRs are welcome.  Testing and coding guidlines are still in the works so I will try to get those created at a later point.  Try to keep similar code syntax to the rest of the code.
 
 ## Credits
 
