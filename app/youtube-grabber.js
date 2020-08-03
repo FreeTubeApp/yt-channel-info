@@ -49,11 +49,14 @@ class YoutubeGrabber {
     }
 
     let subscriberText
-
-    if (typeof (channelHeaderData.subscriberCountText.runs) !== 'undefined') {
-      subscriberText = channelHeaderData.subscriberCountText.runs[0].text
+    if (channelHeaderData.subscriberCountText && channelHeaderData.subscriberCountText) {
+      if (typeof (channelHeaderData.subscriberCountText.runs) !== 'undefined') {
+        subscriberText = channelHeaderData.subscriberCountText.runs[0].text
+      } else {
+        subscriberText = channelHeaderData.subscriberCountText.simpleText
+      }
     } else {
-      subscriberText = channelHeaderData.subscriberCountText.simpleText
+      subscriberText = "0 subscribers";
     }
 
     let bannerThumbnails = null
