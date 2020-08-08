@@ -69,6 +69,12 @@ class YoutubeGrabberHelper {
       video = obj.gridVideoRenderer
     }
 
+    let title = video.title.simpleText
+
+    if (typeof (title) === 'undefined') {
+      title = video.title.runs[0].text
+    }
+
     if (typeof (video.shortViewCountText) !== 'undefined' && typeof (video.shortViewCountText.simpleText) === 'undefined') {
       liveNow = true
       publishedText = 'Live'
@@ -108,7 +114,7 @@ class YoutubeGrabberHelper {
 
     return {
       type: 'video',
-      title: video.title.runs[0].text,
+      title: title,
       videoId: video.videoId,
       author: channelInfo.channelName,
       authorId: channelInfo.channelId,
