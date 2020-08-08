@@ -1,5 +1,4 @@
 const axios = require('axios')
-const cheerio = require('cheerio')
 
 class YoutubeGrabberHelper {
   /**
@@ -105,9 +104,11 @@ class YoutubeGrabberHelper {
       }
     }
 
+    console.log(video)
+
     return {
       type: 'video',
-      title: video.title.simpleText,
+      title: video.title.runs[0].text,
       videoId: video.videoId,
       author: channelInfo.channelName,
       authorId: channelInfo.channelId,
