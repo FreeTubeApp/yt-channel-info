@@ -110,8 +110,6 @@ class YoutubeGrabberHelper {
       }
     }
 
-    console.log(video)
-
     return {
       type: 'video',
       title: title,

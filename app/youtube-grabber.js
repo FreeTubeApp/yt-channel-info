@@ -14,10 +14,16 @@ class YoutubeGrabber {
   static async getChannelInfo(channelId) {
     const channelUrl = `https://youtube.com/channel/${channelId}/about?flow=grid&view=0&pbj=1`
 
-    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(channelUrl)
+    let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(channelUrl)
 
     if (channelPageResponse.error) {
-      return Promise.reject(channelPageResponse.message)
+      // Try again as a user channel
+      const userUrl = `https://youtube.com/user/${channelId}/about?flow=grid&view=0&pbj=1`
+      channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
+
+      if (channelPageResponse.error) {
+        return Promise.reject(channelPageResponse.message)
+      }
     }
 
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
@@ -211,10 +217,16 @@ class YoutubeGrabber {
     })
     const ajaxUrl = `https://youtube.com/channel/${channelId}/search?${urlParams}`
 
-    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
+    let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
 
     if (channelPageResponse.error) {
-      return Promise.reject(channelPageResponse.message)
+      // Try again as a user channel
+      const userUrl = `https://youtube.com/user/${channelId}/search?${urlParams}`
+      channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
+
+      if (channelPageResponse.error) {
+        return Promise.reject(channelPageResponse.message)
+      }
     }
 
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
@@ -226,7 +238,13 @@ class YoutubeGrabber {
       channelUrl: `https://youtube.com/channel/${channelId}`
     }
 
-    const searchResults = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[6].expandableTabRenderer.content.sectionListRenderer
+    const searchTab = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs.findIndex((tab) => {
+      if (typeof (tab.expandableTabRenderer) !== 'undefined') {
+        return true
+      }
+    })
+
+    const searchResults = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[searchTab].expandableTabRenderer.content.sectionListRenderer
     const searchItems = searchResults.contents
 
     let continuation = null

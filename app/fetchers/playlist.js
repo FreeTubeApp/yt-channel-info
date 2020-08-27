@@ -8,10 +8,16 @@ class PlaylistFetcher {
 
   static async getChannelPlaylistLast (channelId) {
     const channelUrl = `https://youtube.com/channel/${channelId}/playlists?flow=grid&view=1&pbj=1`
-    const channelPageResponse = await helper.makeChannelRequest(channelUrl)
+    let channelPageResponse = await helper.makeChannelRequest(channelUrl)
 
     if (channelPageResponse.error) {
-      return Promise.reject(channelPageResponse.message)
+      // Try again as a user channel
+      const userUrl = `https://youtube.com/user/${channelId}/playlists?flow=grid&view=1&pbj=1`
+      channelPageResponse = await helper.makeChannelRequest(userUrl)
+
+      if (channelPageResponse.error) {
+        return Promise.reject(channelPageResponse.message)
+      }
     }
 
     return await this.parseChannelPlaylistResponse(channelPageResponse)
@@ -19,10 +25,16 @@ class PlaylistFetcher {
 
   static async getChannelPlaylistOldest (channelId) {
     const channelUrl = `https://youtube.com/channel/${channelId}/playlists?view=1&sort=da&flow=grid&pbj=1`
-    const channelPageResponse = await helper.makeChannelRequest(channelUrl)
+    let channelPageResponse = await helper.makeChannelRequest(channelUrl)
 
     if (channelPageResponse.error) {
-      return Promise.reject(channelPageResponse.message)
+      // Try again as a user channel
+      const userUrl = `https://youtube.com/user/${channelId}/playlists?view=1&sort=da&flow=grid&pbj=1`
+      channelPageResponse = await helper.makeChannelRequest(userUrl)
+
+      if (channelPageResponse.error) {
+        return Promise.reject(channelPageResponse.message)
+      }
     }
 
     return await this.parseChannelPlaylistResponse(channelPageResponse)
@@ -30,10 +42,16 @@ class PlaylistFetcher {
 
   static async getChannelPlaylistNewest (channelId) {
     const channelUrl = `https://youtube.com/channel/${channelId}/playlists?view=1&sort=dd&flow=grid&pbj=1`
-    const channelPageResponse = await helper.makeChannelRequest(channelUrl)
+    let channelPageResponse = await helper.makeChannelRequest(channelUrl)
 
     if (channelPageResponse.error) {
-      return Promise.reject(channelPageResponse.message)
+      // Try again as a user channel
+      const userUrl = `https://youtube.com/user/${channelId}/playlists?view=1&sort=dd&flow=grid&pbj=1`
+      channelPageResponse = await helper.makeChannelRequest(userUrl)
+
+      if (channelPageResponse.error) {
+        return Promise.reject(channelPageResponse.message)
+      }
     }
 
     return await this.parseChannelPlaylistResponse(channelPageResponse)
