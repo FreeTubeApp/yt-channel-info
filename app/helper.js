@@ -32,9 +32,17 @@ class YoutubeGrabberHelper {
     const channelName = channelMetaData.title
     const channelVideoData = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
 
+    if (typeof (channelVideoData) === 'undefined') {
+      // Channel has no videos
+      return {
+        items: [],
+        continuation: null
+      }
+    }
+
     let continuation = null
 
-    if (typeof (channelVideoData.continuations) !== 'undefined') {
+    if (typeof channelVideoData.continuations !== 'undefined') {
       continuation = channelVideoData.continuations[0].nextContinuationData.continuation
     }
 
