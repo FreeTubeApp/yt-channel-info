@@ -82,13 +82,12 @@ class YoutubeGrabberHelper {
     if (typeof (title) === 'undefined') {
       title = video.title.runs[0].text
     }
-
     if (typeof (video.shortViewCountText) !== 'undefined' && typeof (video.shortViewCountText.simpleText) === 'undefined') {
       liveNow = true
       publishedText = 'Live'
       viewCount = parseInt(video.shortViewCountText.runs[0].text)
       viewCountText = video.shortViewCountText.runs[0].text + video.shortViewCountText.runs[1].text
-    } else if (video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer.text.simpleText === 'PREMIERE') {
+    } else if (typeof (video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer) !== 'undefined' && video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer.text.simpleText === 'PREMIERE') {
       premiere = true
       durationText = 'PREMIERE'
       viewCount = 0
@@ -101,20 +100,24 @@ class YoutubeGrabberHelper {
 
       publishedText = video.publishedTimeText.simpleText
 
-      durationText = video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer.text.simpleText
-      const durationSplit = durationText.split(':')
+      if (typeof (video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer) !== 'undefined') {
+        durationText = video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer.text.simpleText
+        const durationSplit = durationText.split(':')
 
-      if (durationSplit.length === 3) {
-        const hours = parseInt(durationSplit[0])
-        const minutes = parseInt(durationSplit[1])
-        const seconds = parseInt(durationSplit[2])
+        if (durationSplit.length === 3) {
+          const hours = parseInt(durationSplit[0])
+          const minutes = parseInt(durationSplit[1])
+          const seconds = parseInt(durationSplit[2])
 
-        lengthSeconds = (hours * 3600) + (minutes * 60) + seconds
-      } else if (durationSplit.length === 2) {
-        const minutes = parseInt(durationSplit[0])
-        const seconds = parseInt(durationSplit[1])
+          lengthSeconds = (hours * 3600) + (minutes * 60) + seconds
+        } else if (durationSplit.length === 2) {
+          const minutes = parseInt(durationSplit[0])
+          const seconds = parseInt(durationSplit[1])
 
-        lengthSeconds = (minutes * 60) + seconds
+          lengthSeconds = (minutes * 60) + seconds
+        }
+      } else {
+        lengthSeconds = 0
       }
     }
 
