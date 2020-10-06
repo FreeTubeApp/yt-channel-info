@@ -142,8 +142,14 @@ class YoutubeGrabber {
       return Promise.reject(channelPageResponse.message)
     }
 
+    let nextContinuation = null
+
     const continuationData = channelPageResponse.data[1].response.continuationContents.gridContinuation
-    const nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
+
+    if (typeof (continuationData.continuations) !== 'undefined') {
+      nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
+    }
+
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelId = channelMetaData.externalId
