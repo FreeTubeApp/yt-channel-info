@@ -78,6 +78,7 @@ class YoutubeGrabberHelper {
     }
 
     let title = video.title.simpleText
+    const statusRenderer = video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer
 
     if (typeof (title) === 'undefined') {
       title = video.title.runs[0].text
@@ -87,7 +88,7 @@ class YoutubeGrabberHelper {
       publishedText = 'Live'
       viewCount = parseInt(video.shortViewCountText.runs[0].text)
       viewCountText = video.shortViewCountText.runs[0].text + video.shortViewCountText.runs[1].text
-    } else if (typeof (video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer) !== 'undefined' && video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer.text.simpleText === 'PREMIERE') {
+    } else if (typeof (statusRenderer) !== 'undefined' && typeof (statusRenderer.text) !== 'undefined' && typeof (statusRenderer.text.runs) !== 'undefined') {
       premiere = true
       durationText = 'PREMIERE'
       viewCount = 0
