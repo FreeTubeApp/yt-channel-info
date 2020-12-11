@@ -196,7 +196,7 @@ class YoutubeGrabber {
     }
 
     const continuationData = channelPageResponse.data[1].response.continuationContents.gridContinuation
-    const nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
+    const nextContinuation = continuationData.continuations ? continuationData.continuations[0].nextContinuationData.continuation : null
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelId = channelMetaData.externalId
