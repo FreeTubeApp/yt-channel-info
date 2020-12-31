@@ -99,6 +99,11 @@ class YoutubeGrabber {
         subscriberCount = subscriberNumber
     }
 
+    let isVerified = false
+    if (channelHeaderData.badges) {
+      isVerified = channelHeaderData.badges.some((badge) => badge.metadataBadgeRenderer.tooltip === 'Verified')
+    }
+
     const channelInfo = {
       author: channelMetaData.title,
       authorId: channelMetaData.externalId,
@@ -110,7 +115,8 @@ class YoutubeGrabber {
       description: channelMetaData.description,
       isFamilyFriendly: channelMetaData.isFamilySafe,
       relatedChannels: relatedChannels,
-      allowedRegions: channelMetaData.availableCountryCodes
+      allowedRegions: channelMetaData.availableCountryCodes,
+      isVerified: isVerified
     }
 
     return channelInfo

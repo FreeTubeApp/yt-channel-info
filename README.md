@@ -54,7 +54,8 @@ ytch.getChannelInfo(channelId).then((response) => {
    description: String,
    isFamilyFriendly: Boolean,
    relatedChannels: Array[Object],
-   allowedRegions: Array[String]
+   allowedRegions: Array[String],
+   isVerified: Boolean,
 }
 ```
 
