@@ -78,15 +78,22 @@ class PlaylistFetcher {
     }
 
     const playlistItems = playlistData.items.filter((playlist) => {
-      return typeof (playlist.gridShowRenderer) === 'undefined'
+      return typeof (playlist.gridShowRenderer) === 'undefined' && typeof (playlist.continuationItemRenderer) === 'undefined'
     }).map((playlist) => {
-      return helper.parsePlaylist(playlist, channelInfo)
+      const item = helper.parsePlaylist(playlist, channelInfo)
+      if (item !== null) {
+        return item
+      }
     })
 
     let continuation = null
 
-    if (typeof (playlistData.continuations) !== 'undefined') {
-      continuation = playlistData.continuations[0].nextContinuationData.continuation
+    const continuationItem = playlistData.items.filter((item) => {
+      return typeof (item.continuationItemRenderer) !== 'undefined'
+    })
+
+    if (typeof continuationItem !== 'undefined' && continuationItem.length > 0) {
+      continuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
     return {

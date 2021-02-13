@@ -42,8 +42,12 @@ class YoutubeGrabberHelper {
 
     let continuation = null
 
-    if (typeof channelVideoData.continuations !== 'undefined') {
-      continuation = channelVideoData.continuations[0].nextContinuationData.continuation
+    const continuationItem = channelVideoData.items.filter((item) => {
+      return typeof (item.continuationItemRenderer) !== 'undefined'
+    })
+
+    if (typeof continuationItem !== 'undefined') {
+      continuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
     const channelInfo = {
@@ -51,7 +55,9 @@ class YoutubeGrabberHelper {
       channelName: channelName
     }
 
-    const latestVideos = channelVideoData.items.map((item) => {
+    const latestVideos = channelVideoData.items.filter((item) => {
+      return typeof (item.continuationItemRenderer) === 'undefined'
+    }).map((item) => {
       return this.parseVideo(item, channelInfo)
     })
 
@@ -151,11 +157,21 @@ class YoutubeGrabberHelper {
 
     if (typeof (obj.gridPlaylistRenderer) === 'undefined' && typeof (obj.playlistRenderer) !== 'undefined') {
       playlist = obj.playlistRenderer
+
+      if (typeof playlist === 'undefined') {
+        return null
+      }
+
       thumbnails = playlist.thumbnails[0].thumbnails
       title = playlist.title.simpleText
       videoCount = parseInt(playlist.videoCount)
     } else {
       playlist = obj.gridPlaylistRenderer
+
+      if (typeof playlist === 'undefined') {
+        return null
+      }
+
       thumbnails = playlist.thumbnail.thumbnails
       title = playlist.title.runs[0].text
       videoCount = parseInt(playlist.videoCountShortText.simpleText)

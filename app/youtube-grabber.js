@@ -150,10 +150,14 @@ class YoutubeGrabber {
 
     let nextContinuation = null
 
-    const continuationData = channelPageResponse.data[1].response.continuationContents.gridContinuation
+    const continuationData = channelPageResponse.data[1].response.onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems
 
-    if (typeof (continuationData.continuations) !== 'undefined') {
-      nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
+    const continuationItem = continuationData.filter((item) => {
+      return typeof (item.continuationItemRenderer) !== 'undefined'
+    })
+
+    if (typeof continuationItem !== 'undefined') {
+      nextContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
@@ -165,7 +169,9 @@ class YoutubeGrabber {
       channelName: channelName
     }
 
-    const nextVideos = continuationData.items.map((item) => {
+    const nextVideos = continuationData.filter((item) => {
+      return typeof (item.continuationItemRenderer) === 'undefined'
+    }).map((item) => {
       return YoutubeGrabberHelper.parseVideo(item, channelInfo)
     })
 
@@ -201,8 +207,18 @@ class YoutubeGrabber {
       return Promise.reject(channelPageResponse.message)
     }
 
-    const continuationData = channelPageResponse.data[1].response.continuationContents.gridContinuation
-    const nextContinuation = continuationData.continuations ? continuationData.continuations[0].nextContinuationData.continuation : null
+    let nextContinuation = null
+
+    const continuationData = channelPageResponse.data[1].response.onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems
+
+    const continuationItem = continuationData.filter((item) => {
+      return typeof (item.continuationItemRenderer) !== 'undefined'
+    })
+
+    if (typeof continuationItem !== 'undefined') {
+      nextContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
+    }
+
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelId = channelMetaData.externalId
@@ -213,8 +229,8 @@ class YoutubeGrabber {
       channelUrl: `https://youtube.com/channel/${channelId}`
     }
 
-    const nextPlaylists = continuationData.items.filter((item) => {
-      return typeof (item.gridShowRenderer) === 'undefined'
+    const nextPlaylists = continuationData.filter((item) => {
+      return typeof (item.gridShowRenderer) === 'undefined' && typeof (item.continuationItemRenderer) === 'undefined'
     }).map((item) => {
       return YoutubeGrabberHelper.parsePlaylist(item, channelInfo)
     })
