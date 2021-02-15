@@ -46,7 +46,7 @@ class YoutubeGrabberHelper {
       return typeof (item.continuationItemRenderer) !== 'undefined'
     })
 
-    if (typeof continuationItem !== 'undefined') {
+    if (continuationItem.length > 0) {
       continuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
