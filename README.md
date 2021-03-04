@@ -66,7 +66,7 @@ Grabs videos from a given channel ID.
  - `newest` - Grabs videos from a channel sorted by newest / most recently uploaded (Default option if none given)
  - `oldest` - Grabs videos from a channel sorted by oldest videos
  - `popular` - Grabs videos from a channel sorted by the most popular (Highest amount of views)
- 
+
  ```javascript
  const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
  const sortBy = 'newest'
@@ -83,35 +83,34 @@ ytch.getChannelVideos(channelId, sortBy).then((response) => {
    continuation: String // Will return null if no more results can be found.  Used with getChannelVideosMore()
  }
  ```
- 
+
  **getChannelVideosMore(continuation)**
- 
+
  Grabs more videos within a channel.  Uses the continuation string returned from `getChannelVideos()` or from past calls to `getChannelVideosMore()`.
- 
+
   ```javascript
  const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
- 
+
 ytch.getChannelInfoMore(continuation).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
 })
 
- // Response object 
+ // Response object
  {
    items: Array[Object],
    continuation: String // Will return null if no more results can be found.  Used with getChannelVideosMore()
  }
  ```
- 
+
  **getChannelPlaylistInfo(channelId, [sortBy])**
- 
+
  Grabs playlist information of a given channel ID.
- 
+
  - `last` - Grabs playlists from a channel sorted by the most recently updated playlist (Default option if none given)
- - `oldest` - Grabs playlists from a channel sorted by the creation date (oldest first)
  - `newest` - Grabs playlists from a channel sorted by the creation date (newest first)
- 
+
   ```javascript
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
 const sortBy = 'last'
@@ -128,14 +127,14 @@ ytch.getChannelPlaylistInfo(channelId, sortBy).then((response) => {
    continuation: String // Will return null if no more results can be found.  Used with getChannelPlaylistsMore()
  }
  ```
- 
+
   **getChannelPlaylistsMore(continuation)**
- 
+
  Grabs more playlists within a channel.  Uses the continuation string returned from `getChannelPlaylists()` or from past calls to `getChannelPlaylistsMore()`.
- 
+
   ```javascript
 const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
- 
+
 ytch.getChannelPlaylistsMore(continuation).then((response) => {
    console.log(response)
 }).catch((err) => {
@@ -148,11 +147,11 @@ ytch.getChannelPlaylistsMore(continuation).then((response) => {
    continuation: String // Will return null if no more results can be found.  Used with getChannelPlaylistsMore()
  }
  ```
- 
+
  **searchChannel(channelId, query)**
- 
+
  Searchs for videos and playlists of a given channelId based on the given query
- 
+
    ```javascript
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
 const query = 'linux'
@@ -169,14 +168,14 @@ ytch.searchChannel(channelId, query).then((response) => {
    continuation: String // Will return null if no more results can be found.  Used with searchChannelMore()
  }
  ```
- 
+
   **searchChannelMore(continuation)**
- 
+
  Grabs more search results within a channel.  Uses the continuation string returned from `searchChannel()` or from past calls to `searchChannelMore()`.
- 
+
   ```javascript
 const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
- 
+
 ytch.searchChannelMore(continuation).then((response) => {
    console.log(response)
 }).catch((err) => {
