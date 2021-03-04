@@ -1,6 +1,6 @@
 {
   "name": "yt-channel-info",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Grab YouTube channel information without any official API",
   "main": "index.js",
   "scripts": {

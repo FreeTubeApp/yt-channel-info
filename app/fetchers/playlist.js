@@ -7,7 +7,7 @@ class PlaylistFetcher {
   }
 
   static async getChannelPlaylistLast (channelId) {
-    const channelUrl = `https://youtube.com/channel/${channelId}/playlists?flow=grid&view=1&pbj=1`
+    const channelUrl = `https://youtube.com/channel/${channelId}/playlists?flow=grid&sort=lad&view=1&pbj=1`
     let channelPageResponse = await helper.makeChannelRequest(channelUrl)
 
     if (channelPageResponse.error) {

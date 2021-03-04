@@ -1,24 +1,32 @@
 const axios = require('axios')
 
 class YoutubeGrabberHelper {
+  constructor () {
+    this.session = axios.create({
+      timeout: 10000,
+      headers: {
+        'X-YouTube-Client-Name': '1',
+        'X-YouTube-Client-Version': '2.20201021.03.00',
+        'accept-language': 'en-US,en;q=0.9'
+      }
+    })
+
+    this.cookies = null
+    this.test = 'hello'
+  }
+
   /**
      * Try to get response from request
      * @param { string } url An url
      * @return { Promise<AxiosResponse | null> } Return AxiosResponse or null if response is end with error
      * */
-  static async makeChannelRequest(url) {
+  async makeChannelRequest(url) {
     // Electron doesn't like adding a user-agent in this way.  It might be needed in non-Electron based apps though.
     // 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36',
-    const config = {
-      headers: {
-        'x-youtube-client-name': '1',
-        'x-youtube-client-version': '2.20180222',
-        'accept-language': 'en-US,en;q=0.5'
-      }
-    }
 
     try {
-      return await axios.get(url, config)
+      const response = await this.session.get(url)
+      return response
     } catch (e) {
       return {
         error: true,
@@ -27,7 +35,27 @@ class YoutubeGrabberHelper {
     }
   }
 
-  static async parseChannelVideoResponse(response, channelId) {
+  async makeChannelPost(url, params) {
+    // Electron doesn't like adding a user-agent in this way.  It might be needed in non-Electron based apps though.
+    // 'user-agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.97 Safari/537.36',
+
+    try {
+      const response = await this.session({
+        url: url,
+        method: 'post',
+        data: params
+      })
+
+      return response
+    } catch (e) {
+      return {
+        error: true,
+        message: e
+      }
+    }
+  }
+
+  async parseChannelVideoResponse(response, channelId) {
     const channelMetaData = response.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelVideoData = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
@@ -67,7 +95,7 @@ class YoutubeGrabberHelper {
     }
   }
 
-  static parseVideo(obj, channelInfo) {
+  parseVideo(obj, channelInfo) {
     let video
     let liveNow = false
     let premiere = false
@@ -145,7 +173,7 @@ class YoutubeGrabberHelper {
     }
   }
 
-  static parsePlaylist(obj, channelInfo) {
+  parsePlaylist(obj, channelInfo) {
     if (typeof (obj.gridShowRenderer) !== 'undefined') {
       return
     }
@@ -195,7 +223,7 @@ class YoutubeGrabberHelper {
      * @param { string } url The url of youtube resource
      * @returns { Promise<boolean> } Return TRUE if resource is exists
      * */
-  static async isResourceExists(url) {
+  async isResourceExists(url) {
     const response = await YoutubeGrabberHelper.getResource(url)
     if (!response) return false
 
@@ -205,4 +233,4 @@ class YoutubeGrabberHelper {
   }
 }
 
-module.exports = YoutubeGrabberHelper
+module.exports = new YoutubeGrabberHelper()

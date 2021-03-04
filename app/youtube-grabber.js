@@ -12,13 +12,13 @@ class YoutubeGrabber {
   * @return { Promise<Object> } Return channel information
   * */
   static async getChannelInfo(channelId) {
-    const channelUrl = `https://youtube.com/channel/${channelId}/about?flow=grid&view=0&pbj=1`
+    const channelUrl = `https://youtube.com/channel/${channelId}/channels?flow=grid&view=0&pbj=1`
 
     let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(channelUrl)
 
     if (channelPageResponse.error) {
       // Try again as a user channel
-      const userUrl = `https://youtube.com/user/${channelId}/about?flow=grid&view=0&pbj=1`
+      const userUrl = `https://youtube.com/user/${channelId}/channels?flow=grid&view=0&pbj=1`
       channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
@@ -33,15 +33,23 @@ class YoutubeGrabber {
 
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
     const channelHeaderData = channelPageResponse.data[1].response.header.c4TabbedHeaderRenderer
-    const channelContentsData = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer
+    const headerTabs = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs
+
+    const channelsTab = headerTabs.filter((data) => {
+      if (typeof data.tabRenderer !== 'undefined') {
+        return data.tabRenderer.title === 'Channels'
+      }
+
+      return false
+    })
+
+    const featuredChannels = channelsTab[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
 
     let relatedChannels = []
 
-    if (typeof (channelContentsData.secondaryContents) !== 'undefined') {
-      const featuredChannels = channelContentsData.secondaryContents.browseSecondaryContentsRenderer.contents[0].verticalChannelSectionRenderer.items
-
-      relatedChannels = featuredChannels.map((channel) => {
-        const author = channel.miniChannelRenderer
+    if (typeof (featuredChannels.gridRenderer) !== 'undefined') {
+      relatedChannels = featuredChannels.gridRenderer.items.map((channel) => {
+        const author = channel.gridChannelRenderer
         let channelName
 
         if (typeof (author.title.runs) !== 'undefined') {
@@ -136,13 +144,18 @@ class YoutubeGrabber {
   }
 
   static async getChannelVideosMore (continuation) {
-    const urlParams = queryString.stringify({
-      continuation: continuation,
-      ctoken: continuation
-    })
-    const ajaxUrl = `https://www.youtube.com/browse_ajax?${urlParams}`
+    const urlParams = {
+      context: {
+        client: {
+          clientName: 'WEB',
+          clientVersion: '2.20201021.03.00',
+        },
+      },
+      continuation: continuation
+    }
+    const ajaxUrl = 'https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
 
-    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelPost(ajaxUrl, urlParams)
 
     if (channelPageResponse.error) {
       return Promise.reject(channelPageResponse.message)
@@ -150,7 +163,7 @@ class YoutubeGrabber {
 
     let nextContinuation = null
 
-    const continuationData = channelPageResponse.data[1].response.onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems
+    const continuationData = channelPageResponse.data.onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems
 
     const continuationItem = continuationData.filter((item) => {
       return typeof (item.continuationItemRenderer) !== 'undefined'
@@ -160,7 +173,7 @@ class YoutubeGrabber {
       nextContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
-    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    const channelMetaData = channelPageResponse.data.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelId = channelMetaData.externalId
 
@@ -186,6 +199,7 @@ class YoutubeGrabber {
       case 'last':
         return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId)
       case 'oldest':
+        console.warn("yt-channel-info: Fetching by oldest isn't available in YouTube any more. This option will be removed in a later update.")
         return await YoutubePlaylistFetcher.getChannelPlaylistOldest(channelId)
       case 'newest':
         return await YoutubePlaylistFetcher.getChannelPlaylistNewest(channelId)
@@ -195,13 +209,18 @@ class YoutubeGrabber {
   }
 
   static async getChannelPlaylistsMore (continuation) {
-    const urlParams = queryString.stringify({
-      continuation: continuation,
-      ctoken: continuation
-    })
-    const ajaxUrl = `https://www.youtube.com/browse_ajax?${urlParams}`
+    const urlParams = {
+      context: {
+        client: {
+          clientName: 'WEB',
+          clientVersion: '2.20201021.03.00',
+        },
+      },
+      continuation: continuation
+    }
+    const ajaxUrl = 'https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
 
-    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelPost(ajaxUrl, urlParams)
 
     if (channelPageResponse.error) {
       return Promise.reject(channelPageResponse.message)
@@ -209,7 +228,7 @@ class YoutubeGrabber {
 
     let nextContinuation = null
 
-    const continuationData = channelPageResponse.data[1].response.onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems
+    const continuationData = channelPageResponse.data.onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems
 
     const continuationItem = continuationData.filter((item) => {
       return typeof (item.continuationItemRenderer) !== 'undefined'
@@ -219,7 +238,7 @@ class YoutubeGrabber {
       nextContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
-    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    const channelMetaData = channelPageResponse.data.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelId = channelMetaData.externalId
 
@@ -278,12 +297,17 @@ class YoutubeGrabber {
     })
 
     const searchResults = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[searchTab].expandableTabRenderer.content.sectionListRenderer
-    const searchItems = searchResults.contents
 
     let continuation = null
 
-    if (typeof (searchResults.continuation) !== 'undefined') {
-      continuation = searchResults.continuations[0].nextContinuationData.continuation
+    const searchItems = searchResults.contents
+
+    const continuationItem = searchItems.filter((item) => {
+      return typeof (item.continuationItemRenderer) !== 'undefined'
+    })
+
+    if (typeof continuationItem !== 'undefined' && typeof continuationItem[0] !== 'undefined') {
+      continuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
     if (typeof (searchItems[0].itemSectionRenderer.contents[0].messageRenderer) !== 'undefined') {
@@ -293,7 +317,9 @@ class YoutubeGrabber {
       }
     }
 
-    const parsedSearchItems = searchItems.map((item) => {
+    const parsedSearchItems = searchItems.filter((item) => {
+      return typeof (item.continuationItemRenderer) === 'undefined'
+    }).map((item) => {
       const obj = item.itemSectionRenderer.contents[0]
 
       if (typeof (obj.playlistRenderer) !== 'undefined') {
@@ -310,43 +336,54 @@ class YoutubeGrabber {
   }
 
   static async searchChannelMore (continuation) {
-    const urlParams = queryString.stringify({
-      continuation: continuation,
-      ctoken: continuation
-    })
-    const ajaxUrl = `https://www.youtube.com/browse_ajax?${urlParams}`
+    const urlParams = {
+      context: {
+        client: {
+          clientName: 'WEB',
+          clientVersion: '2.20201021.03.00',
+        },
+      },
+      continuation: continuation
+    }
+    const ajaxUrl = 'https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
 
-    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelPost(ajaxUrl, urlParams)
 
     if (channelPageResponse.error) {
       return Promise.reject(channelPageResponse.message)
     }
 
-    const continuationData = channelPageResponse.data[1].response.continuationContents.sectionListContinuation
-    const nextContinuation = continuationData.continuations[0].nextContinuationData.continuation
-    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    let nextContinuation = null
+
+    const continuationData = channelPageResponse.data.onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems
+
+    const continuationItem = continuationData.filter((item) => {
+      return typeof (item.continuationItemRenderer) !== 'undefined'
+    })
+
+    if (typeof continuationItem !== 'undefined' && typeof continuationItem[0] !== 'undefined') {
+      nextContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
+    }
+
+    const channelMetaData = channelPageResponse.data.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelId = channelMetaData.externalId
 
     const channelInfo = {
       channelId: channelId,
-      channelName: channelName,
-      channelUrl: `https://youtube.com/channel/${channelId}`
+      channelName: channelName
     }
 
-    const parsedSearchItems = continuationData.contents.map((item) => {
-      const obj = item.itemSectionRenderer.contents[0]
-
-      if (typeof (obj.playlistRenderer) !== 'undefined') {
-        return YoutubeGrabberHelper.parsePlaylist(obj, channelInfo)
-      } else {
-        return YoutubeGrabberHelper.parseVideo(obj, channelInfo)
-      }
+    const nextVideos = continuationData.filter((item) => {
+      return typeof (item.continuationItemRenderer) === 'undefined'
+    }).map((item) => {
+      const channel = item.itemSectionRenderer.contents[0]
+      return YoutubeGrabberHelper.parseVideo(channel, channelInfo)
     })
 
     return {
-      continuation: nextContinuation,
-      items: parsedSearchItems
+      items: nextVideos,
+      continuation: nextContinuation
     }
   }
 }
