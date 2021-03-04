@@ -92,7 +92,7 @@ class YoutubeGrabberHelper {
     if (typeof (video.shortViewCountText) !== 'undefined' && typeof (video.shortViewCountText.simpleText) === 'undefined') {
       liveNow = true
       publishedText = 'Live'
-      viewCount = parseInt(video.shortViewCountText.runs[0].text)
+      viewCount = parseInt(video.viewCountText.runs[0].text.split(',').join(''))
       viewCountText = video.shortViewCountText.runs[0].text + video.shortViewCountText.runs[1].text
     } else if (typeof (statusRenderer) !== 'undefined' && typeof (statusRenderer.text) !== 'undefined' && typeof (statusRenderer.text.runs) !== 'undefined') {
       premiere = true
