@@ -156,7 +156,7 @@ class YoutubeGrabber {
       return typeof (item.continuationItemRenderer) !== 'undefined'
     })
 
-    if (typeof continuationItem !== 'undefined') {
+    if (typeof continuationItem !== 'undefined' && typeof continuationItem[0] !== 'undefined') {
       nextContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
@@ -215,7 +215,7 @@ class YoutubeGrabber {
       return typeof (item.continuationItemRenderer) !== 'undefined'
     })
 
-    if (typeof continuationItem !== 'undefined') {
+    if (typeof continuationItem !== 'undefined' && typeof continuationItem[0] !== 'undefined') {
       nextContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
