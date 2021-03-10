@@ -56,6 +56,7 @@ ytch.getChannelInfo(channelId).then((response) => {
    relatedChannels: Array[Object],
    allowedRegions: Array[String],
    isVerified: Boolean,
+   relatedChannelsContinuation: String // Will return null if there are 12 or fewer related channels.  Used with getRelatedChannelsMore()
 }
 ```
 
@@ -186,6 +187,26 @@ ytch.searchChannelMore(continuation).then((response) => {
  {
    items: Array[Object],
    continuation: String // Will return null if no more results can be found.  Used with searchChannelMore()
+ }
+ ```
+
+**getRelatedChannelsMore(continuation)**
+
+ Grabs more related channels within a channel.  Uses the relatedChannelsContinuation string returned from `getChannelInfo()` or from past calls to `getRelatedChannelsMore()`.
+
+  ```javascript
+ const continuation = '4qmFsgKlARIYVUNtOUs2cmJ5OThXOEppZ0xvWk9oNkZRGlhFZ2hqYUdGdWJtVnNjeGdESUFBd0FUZ0I2Z01vUTJkQlUwZG9iMWxXVlU1M1pXdHNVR1ZzUW5saE1IaGhXWHBhWm1SV1NsSldWazQyVG5wa1VnJTNEJTNEmgIuYnJvd3NlLWZlZWRVQ205SzZyYnk5OFc4SmlnTG9aT2g2RlFjaGFubmVsczE1Ng%3D%3D'
+
+ytch.getRelatedChannelsMore(continuation).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   relatedChannels: Array[Object],
+   relatedChannelsContinuation: String // Will return null if no more results can be found.  Used with getRelatedChannelsMore()
  }
  ```
 
