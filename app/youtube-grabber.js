@@ -388,8 +388,11 @@ class YoutubeGrabber {
   }
 
   static async getChannelCommunityPosts(channelId) {
-    const firstPageData = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/c/${channelId}/community`)
-    return YoutubeGrabberHelper.parseCommunityPage(firstPageData)
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/c/${channelId}/community`)
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
+    }
+    return YoutubeGrabberHelper.parseCommunityPage(channelPageResponse)
   }
 
   static async getChannelCommunityPostsMore(continuation, innerAPIKey) {
