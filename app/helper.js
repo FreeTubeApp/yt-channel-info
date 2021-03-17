@@ -174,14 +174,13 @@ class YoutubeGrabberHelper {
     }
   }
 
-
   parseCommunityPage(communityInfo) {
     // A broader match approach to the whole JSON is required, because trackingParams can now occur in polls
     // Get the JSON data as string
     let contentDataString = communityInfo.data.match(/ytInitialData.+?(?=;<\/script>)/)[0]
     let innertubeAPIkey = communityInfo.data.match(/innertubeApiKey.+?(?=innertubeApiVersion)/)[0]
-    //innertubeApiKey":"AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8","innertubeApiVersion"
-    innertubeAPIkey = innertubeAPIkey.substring(18, innertubeAPIkey.length-3)
+    // innertubeApiKey":"AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8","innertubeApiVersion"
+    innertubeAPIkey = innertubeAPIkey.substring(18, innertubeAPIkey.length - 3)
 
     contentDataString = contentDataString.substring(16, contentDataString.length)
 
@@ -189,11 +188,10 @@ class YoutubeGrabberHelper {
     let contentDataJSON = JSON.parse(contentDataString)
     contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
 
-
-    return { posts: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey }
+    return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey }
   }
 
-  createCommunityPostArray(postArray){
+  createCommunityPostArray(postArray) {
     const postsArray = []
     postArray.forEach((post) => {
       if ('continuationItemRenderer' in post) {
@@ -201,6 +199,7 @@ class YoutubeGrabberHelper {
         return
       }
 
+      // Default structure of a post
       const postData = {
         postText: post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs[0].text,
         postId: post.backstagePostThreadRenderer.post.backstagePostRenderer.postId,
@@ -208,18 +207,20 @@ class YoutubeGrabberHelper {
         publishedText: post.backstagePostThreadRenderer.post.backstagePostRenderer.publishedTimeText.runs[0].text,
         voteCount: post.backstagePostThreadRenderer.post.backstagePostRenderer.voteCount.simpleText,
         postContent: null,
-        commentCount: post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer.text.simpleText
+        commentCount: ('text' in post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer) ? post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer.text.simpleText : '0'
       }
+
+      // if this exists, then the post contains more data than only text
       if ('backstageAttachment' in post.backstagePostThreadRenderer.post.backstagePostRenderer) {
         if ('backstageImageRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
-          // image with post
+          // post with an image
           postData.postContent = { type: 'image', content: post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.backstageImageRenderer.image.thumbnails }
         } else if ('pollRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
-          // poll
+          // post with a poll
           const pollObject = post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.pollRenderer
-          postData.postContent = { type: 'poll', content: { choices: pollObject.choices, totalVotes: pollObject.totalVotes.simpleText } }
+          postData.postContent = { type: 'poll', content: { choices: pollObject.choices.map((entry) => entry.text.runs[0].text), totalVotes: pollObject.totalVotes.simpleText } }
         } else if ('videoRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
-          // video
+          // post with a video
           const videoRenderer = post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.videoRenderer
           postData.postContent = {
             type: 'video',
@@ -235,8 +236,8 @@ class YoutubeGrabberHelper {
               thumbnails: videoRenderer.thumbnail.thumbnails
             }
           }
-        } else if ('playlistRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment){
-          // playlist posted
+        } else if ('playlistRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
+          // post with a playlist
           const playlistRenderer = post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.playlistRenderer
           postData.postContent = {
             type: 'playlist',
@@ -254,15 +255,14 @@ class YoutubeGrabberHelper {
           // there are small preview lines of the first view videos in the playlist
           playlistRenderer.videos.forEach((video) => {
             postData.postContent.content.playlistVideoRenderer.push({
-                title: video.childVideoRenderer.title.simpleText,
-                videoId: video.childVideoRenderer.videoId,
-                lengthText: video.childVideoRenderer.lengthText.simpleText
-              })
-            }
+              title: video.childVideoRenderer.title.simpleText,
+              videoId: video.childVideoRenderer.videoId,
+              lengthText: video.childVideoRenderer.lengthText.simpleText
+            })
+          }
           )
-
         } else {
-          console.log('NEITHER POLL NOR IMAGE')
+          console.error('New type of post detected. Please report this to the repository with the log and channel that was scraped')
           console.log(post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.keys())
         }
       }

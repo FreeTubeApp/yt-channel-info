@@ -394,19 +394,21 @@ class YoutubeGrabber {
 
   static async getChannelCommunityPostsMore(continuation, innerAPIKey) {
     const channelPageResponse = await YoutubeGrabberHelper.makeChannelPost(`https://www.youtube.com/youtubei/v1/browse?key=${innerAPIKey}`, {
-      'context': {
-        'client': {
-          'clientName': 'WEB',
-          'clientVersion': '2.20210314.08.00',
+      context: {
+        client: {
+          clientName: 'WEB',
+          clientVersion: '2.20210314.08.00',
         },
       },
-      'continuation': continuation
+      continuation: continuation
     })
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
+    }
     const postDataArray = channelPageResponse.data.onResponseReceivedEndpoints[0].appendContinuationItemsAction.continuationItems
-    const contValue = ("continuationItemRenderer" in postDataArray[postDataArray.length-1]) ? postDataArray[postDataArray.length-1].continuationItemRenderer.continuationEndpoint.continuationCommand.token : null
-    return { posts: YoutubeGrabberHelper.createCommunityPostArray(postDataArray), continuation: contValue, innerTubeApi: innerAPIKey}
+    const contValue = ('continuationItemRenderer' in postDataArray[postDataArray.length - 1]) ? postDataArray[postDataArray.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token : null
+    return { items: YoutubeGrabberHelper.createCommunityPostArray(postDataArray), continuation: contValue, innerTubeApi: innerAPIKey }
   }
-
 }
 
 module.exports = YoutubeGrabber
