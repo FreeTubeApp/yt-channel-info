@@ -270,7 +270,7 @@ videoPostContent = {
     publishedText: String,
     lengthText: String,
     viewCountText: String,
-    ownerBadges: Array[Object], // Array of object in the original format from the webpage
+    ownerBadges: Object, // Object indicating possible badges {verified: false, officialArtist: false}
     author: String,
     thumbnails: Array[Object] // Array of objects with links to images
   }

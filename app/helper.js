@@ -187,8 +187,10 @@ class YoutubeGrabberHelper {
     // Parse the JSON data and get the relevent array with data
     let contentDataJSON = JSON.parse(contentDataString)
     contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
-
-    return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey }
+    if ('continuationItemRenderer' in contentDataJSON.contents[contentDataJSON.contents.length - 1]) {
+      return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey }
+    }
+    return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: null, innerTubeApi: null }
   }
 
   createCommunityPostArray(postArray) {
@@ -231,10 +233,16 @@ class YoutubeGrabberHelper {
               publishedText: videoRenderer.publishedTimeText.simpleText,
               lengthText: videoRenderer.lengthText.simpleText,
               viewCountText: videoRenderer.viewCountText.simpleText,
-              ownerBadges: videoRenderer.ownerBadges,
+              badges: { verified: false, officialArtist: false },
               author: videoRenderer.ownerText.runs[0].text,
               thumbnails: videoRenderer.thumbnail.thumbnails
             }
+          }
+          if ('ownerBadges' in videoRenderer) {
+            videoRenderer.ownerBadges.forEach((badge) => {
+              postData.postContent.content.badges.officialArtist = (badge.metadataBadgeRenderer.tooltip === 'Official Artist Channel' || postData.postContent.content.badges.officialArtist)
+              postData.postContent.content.badges.verified = (badge.metadataBadgeRenderer.tooltip === 'Verified' || postData.postContent.content.badges.verified)
+            })
           }
         } else if ('playlistRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
           // post with a playlist
