@@ -124,7 +124,7 @@ class YoutubeGrabber {
       isFamilyFriendly: channelMetaData.isFamilySafe,
       relatedChannels: relatedChannels,
       allowedRegions: channelMetaData.availableCountryCodes,
-      isVerified: isVerified
+      isVerified: isVerified,
     }
 
     return channelInfo
@@ -387,10 +387,14 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelCommunityPosts(channelId) {
-    const channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/c/${channelId}/community`)
+  static async getChannelCommunityPosts(channelId, authorURL = null) {
+    const requestURL = (authorURL !== null) ? ((authorURL[authorURL.length - 1] === '/') ? `${authorURL}community` : `${authorURL}/community`) : `https://www.youtube.com/channel/${channelId}/community`
+    let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(requestURL)
     if (channelPageResponse.error) {
-      return Promise.reject(channelPageResponse.message)
+      channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/user/${channelId}/community`)
+      if (channelPageResponse.error) {
+        return Promise.reject(channelPageResponse.message)
+      }
     }
     return YoutubeGrabberHelper.parseCommunityPage(channelPageResponse)
   }

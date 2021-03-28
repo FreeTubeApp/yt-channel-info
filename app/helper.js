@@ -203,7 +203,7 @@ class YoutubeGrabberHelper {
 
       // Default structure of a post
       const postData = {
-        postText: post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs[0].text,
+        postText: ('runs' in post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText) ? post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs[0].text : null,
         postId: post.backstagePostThreadRenderer.post.backstagePostRenderer.postId,
         authorThumbnails: post.backstagePostThreadRenderer.post.backstagePostRenderer.authorThumbnail.thumbnails,
         publishedText: post.backstagePostThreadRenderer.post.backstagePostRenderer.publishedTimeText.runs[0].text,
@@ -253,7 +253,6 @@ class YoutubeGrabberHelper {
               playlistId: playlistRenderer.playlistId,
               title: playlistRenderer.title.simpleText,
               playlistVideoRenderer: [],
-              publishedText: playlistRenderer.publishedTimeText.simpleText,
               videoCountText: playlistRenderer.videoCountText.runs[0],
               ownerBadges: playlistRenderer.ownerBadges,
               author: playlistRenderer.longBylineText.runs[0].text,

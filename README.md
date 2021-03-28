@@ -190,14 +190,16 @@ ytch.searchChannelMore(continuation).then((response) => {
  ```
 
 
-**getChannelCommunityPosts(channelId)**
+**getChannelCommunityPosts(channelId, authorURL)**
 
-Searchs for all posts on the community page of a given channelId based on the given query
+Searchs for all posts on the community page of a given channelId based on the given query.
+While the channelId is required as a fallback, a authorURL can be provided optionally to require one request to YouTube less.
+If the author URL fails, then it will fallback to the authorURL and try to access the page normally.
 
   ```javascript
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
 
-ytch.getChannelCommunityPosts(channelId).then((response) => {
+ytch.getChannelCommunityPosts(channelId, authorURL='http://www.youtube.com/c/cChannelId').then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -282,7 +284,6 @@ playlistPostContent = {
     playlistId: String,
     title: String,
     playlistVideoRenderer: Array[Object], // An array of minimized videoPostContent data
-    publishedText: String,
     videoCountText: String,
     ownerBadges: Array[Object],
     author: String,
