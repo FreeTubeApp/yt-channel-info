@@ -401,7 +401,10 @@ class YoutubeGrabber {
     if (channelPageResponse.error) {
       channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/user/${channelId}/community`)
       if (channelPageResponse.error) {
-        return Promise.reject(channelPageResponse.message)
+        channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/c/${channelId}/community`)
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
       }
     }
     return YoutubeGrabberHelper.parseCommunityPage(channelPageResponse)
