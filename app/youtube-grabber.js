@@ -22,7 +22,11 @@ class YoutubeGrabber {
       channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
-        return Promise.reject(channelPageResponse.message)
+        const cUrl = `https://youtube.com/c/${channelId}/channels?flow=grid&view=0&pbj=1`
+        channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(cUrl)
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
       }
     }
 
@@ -277,7 +281,11 @@ class YoutubeGrabber {
       channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
-        return Promise.reject(channelPageResponse.message)
+        const cUrl = `https://youtube.com/c/${channelId}/search?${urlParams}`
+        channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(cUrl)
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
       }
     }
 
