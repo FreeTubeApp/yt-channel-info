@@ -237,7 +237,7 @@ ytch.getChannelCommunityPostsMore(continuation, innerTubeApi).then((response) =>
 
 **Community Posts Format**
 
-The objects in the array of community posts all follow a basic structure but vary drastically in content field of the object.
+The objects in the array of community posts all follow a basic structure but vary drastically in the postContent field of the object.
 
   ```javascript
 postData = {
