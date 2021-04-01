@@ -16,7 +16,11 @@ class PlaylistFetcher {
       channelPageResponse = await helper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
-        return Promise.reject(channelPageResponse.message)
+        const cUrl = `https://youtube.com/c/${channelId}/playlists?flow=grid&view=1&pbj=1`
+        channelPageResponse = await helper.makeChannelRequest(cUrl)
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
       }
     }
 
@@ -33,7 +37,11 @@ class PlaylistFetcher {
       channelPageResponse = await helper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
-        return Promise.reject(channelPageResponse.message)
+        const cUrl = `https://youtube.com/c/${channelId}/playlists?view=1&sort=da&flow=grid&pbj=1`
+        channelPageResponse = await helper.makeChannelRequest(cUrl)
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
       }
     }
 
@@ -50,7 +58,11 @@ class PlaylistFetcher {
       channelPageResponse = await helper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
-        return Promise.reject(channelPageResponse.message)
+        const cUrl = `https://youtube.com/c/${channelId}/playlists?view=1&sort=dd&flow=grid&pbj=1`
+        channelPageResponse = await helper.makeChannelRequest(cUrl)
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
       }
     }
 

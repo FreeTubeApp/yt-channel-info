@@ -22,7 +22,11 @@ class YoutubeGrabber {
       channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
-        return Promise.reject(channelPageResponse.message)
+        const cUrl = `https://youtube.com/c/${channelId}/channels?flow=grid&view=0&pbj=1`
+        channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(cUrl)
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
       }
     }
 
@@ -349,7 +353,11 @@ class YoutubeGrabber {
       channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
-        return Promise.reject(channelPageResponse.message)
+        const cUrl = `https://youtube.com/c/${channelId}/search?${urlParams}`
+        channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(cUrl)
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
       }
     }
 
@@ -457,6 +465,39 @@ class YoutubeGrabber {
       items: nextVideos,
       continuation: nextContinuation
     }
+  }
+
+  static async getChannelCommunityPosts(channelId, authorURL = null) {
+    const requestURL = (authorURL !== null) ? ((authorURL[authorURL.length - 1] === '/') ? `${authorURL}community` : `${authorURL}/community`) : `https://www.youtube.com/channel/${channelId}/community`
+    let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(requestURL)
+    if (channelPageResponse.error) {
+      channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/user/${channelId}/community`)
+      if (channelPageResponse.error) {
+        channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/c/${channelId}/community`)
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
+      }
+    }
+    return YoutubeGrabberHelper.parseCommunityPage(channelPageResponse)
+  }
+
+  static async getChannelCommunityPostsMore(continuation, innerAPIKey) {
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelPost(`https://www.youtube.com/youtubei/v1/browse?key=${innerAPIKey}`, {
+      context: {
+        client: {
+          clientName: 'WEB',
+          clientVersion: '2.20210314.08.00',
+        },
+      },
+      continuation: continuation
+    })
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
+    }
+    const postDataArray = channelPageResponse.data.onResponseReceivedEndpoints[0].appendContinuationItemsAction.continuationItems
+    const contValue = ('continuationItemRenderer' in postDataArray[postDataArray.length - 1]) ? postDataArray[postDataArray.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token : null
+    return { items: YoutubeGrabberHelper.createCommunityPostArray(postDataArray), continuation: contValue, innerTubeApi: innerAPIKey }
   }
 }
 

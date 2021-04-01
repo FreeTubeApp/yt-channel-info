@@ -1,3 +1,4 @@
+
 const axios = require('axios')
 
 class YoutubeGrabberHelper {
@@ -171,6 +172,110 @@ class YoutubeGrabberHelper {
       liveNow: liveNow,
       premiere: premiere
     }
+  }
+
+  parseCommunityPage(communityInfo) {
+    // A broader match approach to the whole JSON is required, because trackingParams can now occur in polls
+    // Get the JSON data as string
+    let contentDataString = communityInfo.data.match(/ytInitialData.+?(?=;<\/script>)/)[0]
+    let innertubeAPIkey = communityInfo.data.match(/innertubeApiKey.+?(?=innertubeApiVersion)/)[0]
+    // innertubeApiKey":"AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8","innertubeApiVersion"
+    innertubeAPIkey = innertubeAPIkey.substring(18, innertubeAPIkey.length - 3)
+
+    contentDataString = contentDataString.substring(16, contentDataString.length)
+
+    // Parse the JSON data and get the relevent array with data
+    let contentDataJSON = JSON.parse(contentDataString)
+    contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
+    if ('continuationItemRenderer' in contentDataJSON.contents[contentDataJSON.contents.length - 1]) {
+      return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey }
+    }
+    return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: null, innerTubeApi: null }
+  }
+
+  createCommunityPostArray(postArray) {
+    const postsArray = []
+    postArray.forEach((post) => {
+      if ('continuationItemRenderer' in post) {
+        // we do not want to access the continuation data like a normal post, but instead later
+        return
+      }
+
+      // Default structure of a post
+      const postData = {
+        postText: ('runs' in post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText) ? post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs[0].text : null,
+        postId: post.backstagePostThreadRenderer.post.backstagePostRenderer.postId,
+        authorThumbnails: post.backstagePostThreadRenderer.post.backstagePostRenderer.authorThumbnail.thumbnails,
+        publishedText: post.backstagePostThreadRenderer.post.backstagePostRenderer.publishedTimeText.runs[0].text,
+        voteCount: post.backstagePostThreadRenderer.post.backstagePostRenderer.voteCount.simpleText,
+        postContent: null,
+        commentCount: ('text' in post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer) ? post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer.text.simpleText : '0'
+      }
+
+      // if this exists, then the post contains more data than only text
+      if ('backstageAttachment' in post.backstagePostThreadRenderer.post.backstagePostRenderer) {
+        if ('backstageImageRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
+          // post with an image
+          postData.postContent = { type: 'image', content: post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.backstageImageRenderer.image.thumbnails }
+        } else if ('pollRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
+          // post with a poll
+          const pollObject = post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.pollRenderer
+          postData.postContent = { type: 'poll', content: { choices: pollObject.choices.map((entry) => entry.text.runs[0].text), totalVotes: pollObject.totalVotes.simpleText } }
+        } else if ('videoRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
+          // post with a video
+          const videoRenderer = post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.videoRenderer
+          postData.postContent = {
+            type: 'video',
+            content: {
+              videoId: videoRenderer.videoId,
+              title: videoRenderer.title.runs[0].text,
+              description: videoRenderer.descriptionSnippet.runs[0].text,
+              publishedText: videoRenderer.publishedTimeText.simpleText,
+              lengthText: videoRenderer.lengthText.simpleText,
+              viewCountText: videoRenderer.viewCountText.simpleText,
+              badges: { verified: false, officialArtist: false },
+              author: videoRenderer.ownerText.runs[0].text,
+              thumbnails: videoRenderer.thumbnail.thumbnails
+            }
+          }
+          if ('ownerBadges' in videoRenderer) {
+            videoRenderer.ownerBadges.forEach((badge) => {
+              postData.postContent.content.badges.officialArtist = (badge.metadataBadgeRenderer.tooltip === 'Official Artist Channel' || postData.postContent.content.badges.officialArtist)
+              postData.postContent.content.badges.verified = (badge.metadataBadgeRenderer.tooltip === 'Verified' || postData.postContent.content.badges.verified)
+            })
+          }
+        } else if ('playlistRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
+          // post with a playlist
+          const playlistRenderer = post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.playlistRenderer
+          postData.postContent = {
+            type: 'playlist',
+            content: {
+              playlistId: playlistRenderer.playlistId,
+              title: playlistRenderer.title.simpleText,
+              playlistVideoRenderer: [],
+              videoCountText: playlistRenderer.videoCountText.runs[0],
+              ownerBadges: playlistRenderer.ownerBadges,
+              author: playlistRenderer.longBylineText.runs[0].text,
+              thumbnails: playlistRenderer.thumbnails
+            }
+          }
+          // there are small preview lines of the first view videos in the playlist
+          playlistRenderer.videos.forEach((video) => {
+            postData.postContent.content.playlistVideoRenderer.push({
+              title: video.childVideoRenderer.title.simpleText,
+              videoId: video.childVideoRenderer.videoId,
+              lengthText: video.childVideoRenderer.lengthText.simpleText
+            })
+          }
+          )
+        } else {
+          console.error('New type of post detected. Please report this to the repository with the log and channel that was scraped')
+          console.log(post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.keys())
+        }
+      }
+      postsArray.push(postData)
+    })
+    return postsArray
   }
 
   parsePlaylist(obj, channelInfo) {

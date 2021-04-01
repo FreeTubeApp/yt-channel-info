@@ -210,6 +210,109 @@ ytch.getRelatedChannelsMore(continuation).then((response) => {
  }
  ```
 
+**getChannelCommunityPosts(channelId, authorURL)**
+
+Searchs for all posts on the community page of a given channelId based on the given query.
+While the channelId is required as a fallback, a authorURL can be provided optionally to require one request to YouTube less.
+If the author URL fails, then it will fallback to the authorURL and try to access the page normally.
+
+  ```javascript
+const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+
+ytch.getChannelCommunityPosts(channelId, authorURL='http://www.youtube.com/c/cChannelId').then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   items: Array[Object], // Described below
+   continuation: String, // Will return null if no more results can be found.  Used with searchChannelMore()
+   innerTubeApi: String
+ }
+ ```
+
+**getChannelCommunityPostsMore(continuation, innerTubeApi)**
+
+Grabs more search results within a channel community page.  Uses the continuation and innerTubeApi strings returned from `getChannelCommunityPosts()` or from past calls to `getChannelCommunityPostsMore()`.
+
+  ```javascript
+const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
+const innerTubeApi = 'JNDJSGJHASJ44DSHGDNLGMHA6FSFas5faF5'
+
+ytch.getChannelCommunityPostsMore(continuation, innerTubeApi).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   items: Array[Object], // Described below
+   continuation: String, // Will return null if no more results can be found.  Used with searchChannelMore()
+   innerTubeApi: String
+ }
+ ```
+
+**Community Posts Format**
+
+The objects in the array of community posts all follow a basic structure but vary drastically in the postContent field of the object.
+
+  ```javascript
+postData = {
+  postText: String,
+  postId: String,
+  authorThumbnails: Array[Object], // Array of objects with links to images
+  publishedText: String,
+  voteCount: String,
+  postContent: Object, // null if the post only consists of text
+  commentCount: String
+}
+
+// If the post contains an image
+imagePostContent = {
+  type: 'image',
+  content: Array[Object] // Array of objects with links to images
+}
+
+pollPostContent = {
+  type: 'poll',
+  content: {
+    choices: Array[String],
+    totalVotes: String }
+}
+
+videoPostContent = {
+  type: 'video',
+  content: {
+    videoId: String,
+    title: String,
+    description: String,
+    publishedText: String,
+    lengthText: String,
+    viewCountText: String,
+    ownerBadges: Object, // Object indicating possible badges {verified: false, officialArtist: false}
+    author: String,
+    thumbnails: Array[Object] // Array of objects with links to images
+  }
+}
+
+playlistPostContent = {
+  type: 'playlist',
+  content: {
+    playlistId: String,
+    title: String,
+    playlistVideoRenderer: Array[Object], // An array of minimized videoPostContent data
+    videoCountText: String,
+    ownerBadges: Array[Object],
+    author: String,
+    thumbnails: Array[Object] // Array of objects with links to images
+  }
+}
+
+ ```
+
 ## Tests
 
 Tests and code standards are still in the process of being created.  Check back later for information on how tests should be performed.
