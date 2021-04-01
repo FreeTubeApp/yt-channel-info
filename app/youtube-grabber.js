@@ -139,10 +139,12 @@ class YoutubeGrabber {
       subscriberCount: subscriberCount,
       description: channelMetaData.description,
       isFamilyFriendly: channelMetaData.isFamilySafe,
-      relatedChannels: relatedChannels,
+      relatedChannels: {
+        items: relatedChannels,
+        continuation: relatedChannelsContinuation
+      },
       allowedRegions: channelMetaData.availableCountryCodes,
-      isVerified: isVerified,
-      relatedChannelsContinuation: relatedChannelsContinuation
+      isVerified: isVerified
     }
 
     return channelInfo
@@ -201,8 +203,8 @@ class YoutubeGrabber {
     })
 
     return {
-      relatedChannels: relatedChannels,
-      relatedChannelsContinuation: nextContinuation
+      items: relatedChannels,
+      continuation: nextContinuation
     }
   }
 

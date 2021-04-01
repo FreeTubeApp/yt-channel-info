@@ -53,10 +53,12 @@ ytch.getChannelInfo(channelId).then((response) => {
    subscriberCount: Integer,
    description: String,
    isFamilyFriendly: Boolean,
-   relatedChannels: Array[Object],
+   relatedChannels: {
+      items: Array[Object],
+      continuation: String // Will return null if there are 12 or fewer related channels.  Used with getRelatedChannelsMore()
+   },
    allowedRegions: Array[String],
-   isVerified: Boolean,
-   relatedChannelsContinuation: String // Will return null if there are 12 or fewer related channels.  Used with getRelatedChannelsMore()
+   isVerified: Boolean
 }
 ```
 
@@ -205,8 +207,8 @@ ytch.getRelatedChannelsMore(continuation).then((response) => {
 
  // Response object
  {
-   relatedChannels: Array[Object],
-   relatedChannelsContinuation: String // Will return null if no more results can be found.  Used with getRelatedChannelsMore()
+   items: Array[Object],
+   continuation: String // Will return null if no more results can be found.  Used with getRelatedChannelsMore()
  }
  ```
 
