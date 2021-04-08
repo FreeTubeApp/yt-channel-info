@@ -12,17 +12,17 @@ class YoutubeGrabber {
   * @return { Promise<Object> } Return channel information
   * */
   static async getChannelInfo(channelId) {
-    const channelUrl = `https://youtube.com/channel/${channelId}/channels?flow=grid&view=0&pbj=1`
+    const channelUrl = `https://www.youtube.com/channel/${channelId}/channels?flow=grid&view=0&pbj=1`
 
     let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(channelUrl)
 
     if (channelPageResponse.error) {
       // Try again as a user channel
-      const userUrl = `https://youtube.com/user/${channelId}/channels?flow=grid&view=0&pbj=1`
+      const userUrl = `https://www.youtube.com/user/${channelId}/channels?flow=grid&view=0&pbj=1`
       channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
-        const cUrl = `https://youtube.com/c/${channelId}/channels?flow=grid&view=0&pbj=1`
+        const cUrl = `https://www.youtube.com/c/${channelId}/channels?flow=grid&view=0&pbj=1`
         channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(cUrl)
         if (channelPageResponse.error) {
           return Promise.reject(channelPageResponse.message)
@@ -249,7 +249,7 @@ class YoutubeGrabber {
     const channelInfo = {
       channelId: channelId,
       channelName: channelName,
-      channelUrl: `https://youtube.com/channel/${channelId}`
+      channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
 
     const nextPlaylists = continuationData.filter((item) => {
@@ -271,17 +271,17 @@ class YoutubeGrabber {
       view: 0,
       pbj: 1
     })
-    const ajaxUrl = `https://youtube.com/channel/${channelId}/search?${urlParams}`
+    const ajaxUrl = `https://www.youtube.com/channel/${channelId}/search?${urlParams}`
 
     let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
 
     if (channelPageResponse.error) {
       // Try again as a user channel
-      const userUrl = `https://youtube.com/user/${channelId}/search?${urlParams}`
+      const userUrl = `https://www.youtube.com/user/${channelId}/search?${urlParams}`
       channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
 
       if (channelPageResponse.error) {
-        const cUrl = `https://youtube.com/c/${channelId}/search?${urlParams}`
+        const cUrl = `https://www.youtube.com/c/${channelId}/search?${urlParams}`
         channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(cUrl)
         if (channelPageResponse.error) {
           return Promise.reject(channelPageResponse.message)
@@ -295,7 +295,7 @@ class YoutubeGrabber {
     const channelInfo = {
       channelId: channelId,
       channelName: channelName,
-      channelUrl: `https://youtube.com/channel/${channelId}`
+      channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
 
     const searchTab = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs.findIndex((tab) => {
