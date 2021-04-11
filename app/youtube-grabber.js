@@ -50,9 +50,12 @@ class YoutubeGrabber {
     const featuredChannels = channelsTab[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
 
     let relatedChannels = []
+    let relatedChannelsContinuation = null
 
     if (typeof (featuredChannels.gridRenderer) !== 'undefined') {
-      relatedChannels = featuredChannels.gridRenderer.items.map((channel) => {
+      relatedChannels = featuredChannels.gridRenderer.items.filter((channel) => {
+        return typeof (channel.gridChannelRenderer) !== 'undefined'
+      }).map((channel) => {
         const author = channel.gridChannelRenderer
         let channelName
 
@@ -69,6 +72,16 @@ class YoutubeGrabber {
           authorThumbnails: author.thumbnail.thumbnails,
         }
       })
+
+      const continuationData = featuredChannels.gridRenderer.items
+
+      const continuationItem = continuationData.filter((item) => {
+        return typeof (item.continuationItemRenderer) !== 'undefined'
+      })
+
+      if (typeof continuationItem !== 'undefined' && typeof continuationItem[0] !== 'undefined') {
+        relatedChannelsContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
+      }
     }
 
     let subscriberText
@@ -126,12 +139,73 @@ class YoutubeGrabber {
       subscriberCount: subscriberCount,
       description: channelMetaData.description,
       isFamilyFriendly: channelMetaData.isFamilySafe,
-      relatedChannels: relatedChannels,
+      relatedChannels: {
+        items: relatedChannels,
+        continuation: relatedChannelsContinuation
+      },
       allowedRegions: channelMetaData.availableCountryCodes,
-      isVerified: isVerified,
+      isVerified: isVerified
     }
 
     return channelInfo
+  }
+
+  static async getRelatedChannelsMore (continuation) {
+    const urlParams = {
+      context: {
+        client: {
+          clientName: 'WEB',
+          clientVersion: '2.20201021.03.00',
+        },
+      },
+      continuation: continuation
+    }
+    const ajaxUrl = 'https://www.youtube.com/youtubei/v1/browse?key=AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8'
+
+    const channelPageResponse = await YoutubeGrabberHelper.makeChannelPost(ajaxUrl, urlParams)
+
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
+    }
+
+    let nextContinuation = null
+
+    const continuationData = channelPageResponse.data.onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems
+
+    const continuationItem = continuationData.filter((item) => {
+      return typeof (item.continuationItemRenderer) !== 'undefined'
+    })
+
+    if (typeof continuationItem !== 'undefined' && typeof continuationItem[0] !== 'undefined') {
+      nextContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
+    }
+
+    let relatedChannels = []
+
+    relatedChannels = continuationData.filter((channel) => {
+      return typeof (channel.gridChannelRenderer) !== 'undefined'
+    }).map((channel) => {
+      const author = channel.gridChannelRenderer
+      let channelName
+
+      if (typeof (author.title.runs) !== 'undefined') {
+        channelName = author.title.runs[0].text
+      } else {
+        channelName = author.title.simpleText
+      }
+
+      return {
+        author: channelName,
+        authorId: author.channelId,
+        authorUrl: author.navigationEndpoint.browseEndpoint.canonicalBaseUrl,
+        authorThumbnails: author.thumbnail.thumbnails,
+      }
+    })
+
+    return {
+      items: relatedChannels,
+      continuation: nextContinuation
+    }
   }
 
   static async getChannelVideos (channelId, sortBy = 'newest') {
