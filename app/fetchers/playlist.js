@@ -29,7 +29,7 @@ class PlaylistFetcher {
     const channelInfo = {
       channelId: channelId,
       channelName: channelName,
-      channelUrl: `https://youtube.com/channel/${channelId}`
+      channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
 
     const playlistData = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[2].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer

@@ -349,17 +349,17 @@ class YoutubeGrabberHelper {
   }
 
   async performChannelPageRequestWithFallbacks(channelId, urlAppendix) {
-    const ajaxUrl = `https://youtube.com/channel/${channelId}/${urlAppendix}`
+    const ajaxUrl = `https://www.youtube.com/channel/${channelId}/${urlAppendix}`
     let workedUrl = 1
     let channelPageResponse = await this.makeChannelRequest(ajaxUrl)
 
     if (channelPageResponse.error) {
       // Try again as a user channel
-      const userUrl = `https://youtube.com/user/${channelId}/${urlAppendix}`
+      const userUrl = `https://www.youtube.com/user/${channelId}/${urlAppendix}`
       channelPageResponse = await this.makeChannelRequest(userUrl)
       workedUrl = 2
       if (channelPageResponse.error) {
-        const cUrl = `https://youtube.com/c/${channelId}/${urlAppendix}`
+        const cUrl = `https://www.youtube.com/c/${channelId}/${urlAppendix}`
         channelPageResponse = await this.makeChannelRequest(cUrl)
         workedUrl = 3
         if (channelPageResponse.error) {
@@ -371,7 +371,7 @@ class YoutubeGrabberHelper {
   }
 
   async performChannelUrlRequest(channelId, urlAppendix) {
-    const ajaxUrl = `https://youtube.com/channel/${channelId}/${urlAppendix}`
+    const ajaxUrl = `https://www.youtube.com/channel/${channelId}/${urlAppendix}`
 
     const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
 
@@ -382,7 +382,7 @@ class YoutubeGrabberHelper {
   }
 
   async performUserUrlRequest(channelId, urlAppendix) {
-    const ajaxUrl = `https://youtube.com/user/${channelId}/${urlAppendix}`
+    const ajaxUrl = `https://www.youtube.com/user/${channelId}/${urlAppendix}`
 
     const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
 
@@ -393,7 +393,7 @@ class YoutubeGrabberHelper {
   }
 
   async performCUrlRequest(channelId, urlAppendix) {
-    const ajaxUrl = `https://youtube.com/c/${channelId}/${urlAppendix}`
+    const ajaxUrl = `https://www.youtube.com/c/${channelId}/${urlAppendix}`
 
     const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
 

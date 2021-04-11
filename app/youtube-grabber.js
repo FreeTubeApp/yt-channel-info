@@ -236,7 +236,7 @@ class YoutubeGrabber {
     const channelInfo = {
       channelId: channelId,
       channelName: channelName,
-      channelUrl: `https://youtube.com/channel/${channelId}`
+      channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
 
     const nextPlaylists = continuationData.filter((item) => {
@@ -268,7 +268,7 @@ class YoutubeGrabber {
     const channelInfo = {
       channelId: channelId,
       channelName: channelName,
-      channelUrl: `https://youtube.com/channel/${channelId}`
+      channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
 
     const searchTab = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs.findIndex((tab) => {
