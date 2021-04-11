@@ -7,28 +7,14 @@ const YoutubePlaylistFetcher = require('./fetchers/playlist')
 
 class YoutubeGrabber {
   /**
-  * Get channel information. Full list of channel information you can find in README.md file
-  * @param { string } channelId The channel id to grab data from.
-  * @return { Promise<Object> } Return channel information
-  * */
-  static async getChannelInfo(channelId) {
-    const channelUrl = `https://youtube.com/channel/${channelId}/channels?flow=grid&view=0&pbj=1`
-
-    let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(channelUrl)
-
-    if (channelPageResponse.error) {
-      // Try again as a user channel
-      const userUrl = `https://youtube.com/user/${channelId}/channels?flow=grid&view=0&pbj=1`
-      channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
-
-      if (channelPageResponse.error) {
-        const cUrl = `https://youtube.com/c/${channelId}/channels?flow=grid&view=0&pbj=1`
-        channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(cUrl)
-        if (channelPageResponse.error) {
-          return Promise.reject(channelPageResponse.message)
-        }
-      }
-    }
+   * Get channel information. Full list of channel information you can find in README.md file
+   * @param { string } channelId The channel id to grab data from.
+   * @param { string } channelIdType (optional) The type of id a channel id can be 1 = /channel/, 2= /user/, 3=/c/.
+   * @return { Promise<Object> } Return channel information
+   * */
+  static async getChannelInfo(channelId, channelIdType = 0) {
+    const decideResponse = await YoutubeGrabberHelper.decideUrlRequestType(channelId, 'channels?flow=grid&view=0&pbj=1', channelIdType)
+    const channelPageResponse = decideResponse.response
 
     if (typeof (channelPageResponse.data[1].response.alerts) !== 'undefined') {
       const alert = channelPageResponse.data[1].response.alerts[0].alertRenderer.text.simpleText
@@ -129,21 +115,22 @@ class YoutubeGrabber {
       relatedChannels: relatedChannels,
       allowedRegions: channelMetaData.availableCountryCodes,
       isVerified: isVerified,
+      channelIdType: decideResponse.channelIdType,
     }
 
     return channelInfo
   }
 
-  static async getChannelVideos (channelId, sortBy = 'newest') {
+  static async getChannelVideos (channelId, sortBy = 'newest', channelIdType = 0) {
     switch (sortBy) {
       case 'popular':
-        return await YoutubeChannelFetcher.getChannelVideosPopular(channelId)
+        return await YoutubeChannelFetcher.getChannelVideosPopular(channelId, channelIdType)
       case 'newest':
-        return await YoutubeChannelFetcher.getChannelVideosNewest(channelId)
+        return await YoutubeChannelFetcher.getChannelVideosNewest(channelId, channelIdType)
       case 'oldest':
-        return await YoutubeChannelFetcher.getChannelVideosOldest(channelId)
+        return await YoutubeChannelFetcher.getChannelVideosOldest(channelId, channelIdType)
       default:
-        return await YoutubeChannelFetcher.getChannelVideosNewest(channelId)
+        return await YoutubeChannelFetcher.getChannelVideosNewest(channelId, channelIdType)
     }
   }
 
@@ -198,17 +185,17 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelPlaylistInfo (channelId, sortBy = 'last') {
+  static async getChannelPlaylistInfo (channelId, sortBy = 'last', channelIdType = 0) {
     switch (sortBy) {
       case 'last':
-        return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId)
+        return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId, channelIdType)
       case 'oldest':
         console.warn("yt-channel-info: Fetching by oldest isn't available in YouTube any more. This option will be removed in a later update.")
-        return await YoutubePlaylistFetcher.getChannelPlaylistOldest(channelId)
+        return await YoutubePlaylistFetcher.getChannelPlaylistOldest(channelId, channelIdType)
       case 'newest':
-        return await YoutubePlaylistFetcher.getChannelPlaylistNewest(channelId)
+        return await YoutubePlaylistFetcher.getChannelPlaylistNewest(channelId, channelIdType)
       default:
-        return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId)
+        return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId, channelIdType)
     }
   }
 
@@ -264,30 +251,16 @@ class YoutubeGrabber {
     }
   }
 
-  static async searchChannel(channelId, query = '') {
+  static async searchChannel(channelId, query = '', channelIdType = 0) {
     const urlParams = queryString.stringify({
       query: query,
       flow: 'grid',
       view: 0,
       pbj: 1
     })
-    const ajaxUrl = `https://youtube.com/channel/${channelId}/search?${urlParams}`
 
-    let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(ajaxUrl)
-
-    if (channelPageResponse.error) {
-      // Try again as a user channel
-      const userUrl = `https://youtube.com/user/${channelId}/search?${urlParams}`
-      channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(userUrl)
-
-      if (channelPageResponse.error) {
-        const cUrl = `https://youtube.com/c/${channelId}/search?${urlParams}`
-        channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(cUrl)
-        if (channelPageResponse.error) {
-          return Promise.reject(channelPageResponse.message)
-        }
-      }
-    }
+    const decideResponse = await YoutubeGrabberHelper.decideUrlRequestType(channelId, `search?${urlParams}`, channelIdType)
+    const channelPageResponse = decideResponse.response
 
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
@@ -395,19 +368,9 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelCommunityPosts(channelId, authorURL = null) {
-    const requestURL = (authorURL !== null) ? ((authorURL[authorURL.length - 1] === '/') ? `${authorURL}community` : `${authorURL}/community`) : `https://www.youtube.com/channel/${channelId}/community`
-    let channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(requestURL)
-    if (channelPageResponse.error) {
-      channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/user/${channelId}/community`)
-      if (channelPageResponse.error) {
-        channelPageResponse = await YoutubeGrabberHelper.makeChannelRequest(`https://www.youtube.com/c/${channelId}/community`)
-        if (channelPageResponse.error) {
-          return Promise.reject(channelPageResponse.message)
-        }
-      }
-    }
-    return YoutubeGrabberHelper.parseCommunityPage(channelPageResponse)
+  static async getChannelCommunityPosts(channelId, channelIdType = 0) {
+    const channelPageResponse = await YoutubeGrabberHelper.decideUrlRequestType(channelId, 'community', channelIdType)
+    return YoutubeGrabberHelper.parseCommunityPage(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
   static async getChannelCommunityPostsMore(continuation, innerAPIKey) {

@@ -28,14 +28,19 @@ import ytch from 'yt-channel-info'
 
 ## API
 
-**getChannelInfo(channelId)**
+**getChannelInfo(channelId, [channelIdType])**
 
 Returns information about a given channel ID.
+The optional argument 'channelIdType' can be provided to get faster results and less network requests if the type of channel id is known.
+- `0` = Default value used by the module. It will try all url types in the order channel -> user -> name
+- `1` = A channel id that is used with `https://www.youtube.com/channel/channelId` urls
+- `2` = A user id that is used with `https://www.youtube.com/user/channelId` urls
+- `3` = A name id that is used with `https://www.youtube.com/c/channelId` urls
 
 ```javascript
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
 
-ytch.getChannelInfo(channelId).then((response) => {
+ytch.getChannelInfo(channelId, channelIdType).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -56,10 +61,11 @@ ytch.getChannelInfo(channelId).then((response) => {
    relatedChannels: Array[Object],
    allowedRegions: Array[String],
    isVerified: Boolean,
+   channelIdType: Number, 
 }
 ```
 
-**getChannelVideos(channelId, [sortBy])**
+**getChannelVideos(channelId, [sortBy], [channelIdType])**
 
 Grabs videos from a given channel ID.
 
@@ -67,11 +73,13 @@ Grabs videos from a given channel ID.
  - `oldest` - Grabs videos from a channel sorted by oldest videos
  - `popular` - Grabs videos from a channel sorted by the most popular (Highest amount of views)
 
+
+- `channelIdType` defined as for `getChannelInfo()`
  ```javascript
  const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
  const sortBy = 'newest'
 
-ytch.getChannelVideos(channelId, sortBy).then((response) => {
+ytch.getChannelVideos(channelId, sortBy, channelIdType).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -80,7 +88,8 @@ ytch.getChannelVideos(channelId, sortBy).then((response) => {
  // Response object
  {
    items: Array[Object],
-   continuation: String // Will return null if no more results can be found.  Used with getChannelVideosMore()
+   continuation: String, // Will return null if no more results can be found.  Used with getChannelVideosMore()
+   channelIdType: Number,
  }
  ```
 
@@ -104,18 +113,21 @@ ytch.getChannelInfoMore(continuation).then((response) => {
  }
  ```
 
- **getChannelPlaylistInfo(channelId, [sortBy])**
+ **getChannelPlaylistInfo(channelId, [sortBy], [channelIdType])**
 
  Grabs playlist information of a given channel ID.
 
  - `last` - Grabs playlists from a channel sorted by the most recently updated playlist (Default option if none given)
  - `newest` - Grabs playlists from a channel sorted by the creation date (newest first)
 
-  ```javascript
+
+- `channelIdType` defined as for `getChannelInfo()` 
+  
+```javascript
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
 const sortBy = 'last'
 
-ytch.getChannelPlaylistInfo(channelId, sortBy).then((response) => {
+ytch.getChannelPlaylistInfo(channelId, sortBy, channelIdType).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -125,6 +137,7 @@ ytch.getChannelPlaylistInfo(channelId, sortBy).then((response) => {
  {
    items: Array[Object],
    continuation: String // Will return null if no more results can be found.  Used with getChannelPlaylistsMore()
+   channelIdType: Number,
  }
  ```
 
@@ -190,11 +203,12 @@ ytch.searchChannelMore(continuation).then((response) => {
  ```
 
 
-**getChannelCommunityPosts(channelId, authorURL)**
+**getChannelCommunityPosts(channelId, [channelIdType])**
 
-Searchs for all posts on the community page of a given channelId based on the given query.
-While the channelId is required as a fallback, a authorURL can be provided optionally to require one request to YouTube less.
-If the author URL fails, then it will fallback to the authorURL and try to access the page normally.
+Searches for all posts on the community page of a given channelId based on the given query.
+
+- `channelIdType` defined as for `getChannelInfo()`
+
 
   ```javascript
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
@@ -209,7 +223,8 @@ ytch.getChannelCommunityPosts(channelId, authorURL='http://www.youtube.com/c/cCh
  {
    items: Array[Object], // Described below
    continuation: String, // Will return null if no more results can be found.  Used with searchChannelMore()
-   innerTubeApi: String
+   innerTubeApi: String,
+   channelIdType: Number,
  }
  ```
 

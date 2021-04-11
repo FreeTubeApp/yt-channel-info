@@ -56,7 +56,7 @@ class YoutubeGrabberHelper {
     }
   }
 
-  async parseChannelVideoResponse(response, channelId) {
+  async parseChannelVideoResponse(response, channelId, channelIdType) {
     const channelMetaData = response.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelVideoData = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
@@ -92,7 +92,8 @@ class YoutubeGrabberHelper {
 
     return {
       items: latestVideos,
-      continuation: continuation
+      continuation: continuation,
+      channelIdType: channelIdType,
     }
   }
 
@@ -174,7 +175,7 @@ class YoutubeGrabberHelper {
     }
   }
 
-  parseCommunityPage(communityInfo) {
+  parseCommunityPage(communityInfo, channelIdType) {
     // A broader match approach to the whole JSON is required, because trackingParams can now occur in polls
     // Get the JSON data as string
     let contentDataString = communityInfo.data.match(/ytInitialData.+?(?=;<\/script>)/)[0]
@@ -188,9 +189,9 @@ class YoutubeGrabberHelper {
     let contentDataJSON = JSON.parse(contentDataString)
     contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
     if ('continuationItemRenderer' in contentDataJSON.contents[contentDataJSON.contents.length - 1]) {
-      return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey }
+      return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey, channelIdType: channelIdType }
     }
-    return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: null, innerTubeApi: null }
+    return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: null, innerTubeApi: null, channelIdType: channelIdType }
   }
 
   createCommunityPostArray(postArray) {
@@ -335,6 +336,71 @@ class YoutubeGrabberHelper {
     const $ = cheerio.load(response.data)
     const metaTags = $('meta[name="title"]')
     return metaTags.length !== 0
+  }
+
+  async decideUrlRequestType(channelId, urlAppendix, channelIdType) {
+    switch (channelIdType) {
+      case 0: return this.performChannelPageRequestWithFallbacks(channelId, urlAppendix)
+      case 1: return this.performChannelUrlRequest(channelId, urlAppendix)
+      case 2: return this.performUserUrlRequest(channelId, urlAppendix)
+      case 3: return this.performCUrlRequest(channelId, urlAppendix)
+      default: return this.performChannelPageRequestWithFallbacks(channelId, urlAppendix)
+    }
+  }
+
+  async performChannelPageRequestWithFallbacks(channelId, urlAppendix) {
+    const ajaxUrl = `https://youtube.com/channel/${channelId}/${urlAppendix}`
+    let workedUrl = 1
+    let channelPageResponse = await this.makeChannelRequest(ajaxUrl)
+
+    if (channelPageResponse.error) {
+      // Try again as a user channel
+      const userUrl = `https://youtube.com/user/${channelId}/${urlAppendix}`
+      channelPageResponse = await this.makeChannelRequest(userUrl)
+      workedUrl = 2
+      if (channelPageResponse.error) {
+        const cUrl = `https://youtube.com/c/${channelId}/${urlAppendix}`
+        channelPageResponse = await this.makeChannelRequest(cUrl)
+        workedUrl = 3
+        if (channelPageResponse.error) {
+          return Promise.reject(channelPageResponse.message)
+        }
+      }
+    }
+    return { response: channelPageResponse, channelIdType: workedUrl }
+  }
+
+  async performChannelUrlRequest(channelId, urlAppendix) {
+    const ajaxUrl = `https://youtube.com/channel/${channelId}/${urlAppendix}`
+
+    const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
+
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
+    }
+    return { response: channelPageResponse, channelIdType: 1 }
+  }
+
+  async performUserUrlRequest(channelId, urlAppendix) {
+    const ajaxUrl = `https://youtube.com/user/${channelId}/${urlAppendix}`
+
+    const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
+
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
+    }
+    return { response: channelPageResponse, channelIdType: 2 }
+  }
+
+  async performCUrlRequest(channelId, urlAppendix) {
+    const ajaxUrl = `https://youtube.com/c/${channelId}/${urlAppendix}`
+
+    const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
+
+    if (channelPageResponse.error) {
+      return Promise.reject(channelPageResponse.message)
+    }
+    return { response: channelPageResponse, channelIdType: 3 }
   }
 }
 
