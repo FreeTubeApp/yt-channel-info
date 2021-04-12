@@ -6,70 +6,22 @@ class PlaylistFetcher {
     this.getOriginalURL = () => _url
   }
 
-  static async getChannelPlaylistLast (channelId) {
-    const channelUrl = `https://www.youtube.com/channel/${channelId}/playlists?flow=grid&sort=lad&view=1&pbj=1`
-    let channelPageResponse = await helper.makeChannelRequest(channelUrl)
-
-    if (channelPageResponse.error) {
-      // Try again as a user channel
-      const userUrl = `https://www.youtube.com/user/${channelId}/playlists?flow=grid&view=1&pbj=1`
-      channelPageResponse = await helper.makeChannelRequest(userUrl)
-
-      if (channelPageResponse.error) {
-        const cUrl = `https://www.youtube.com/c/${channelId}/playlists?flow=grid&view=1&pbj=1`
-        channelPageResponse = await helper.makeChannelRequest(cUrl)
-        if (channelPageResponse.error) {
-          return Promise.reject(channelPageResponse.message)
-        }
-      }
-    }
-
-    return await this.parseChannelPlaylistResponse(channelPageResponse)
+  static async getChannelPlaylistLast (channelId, channelIdType) {
+    const channelPageResponse = await helper.decideUrlRequestType(channelId, 'playlists?flow=grid&sort=lad&view=1&pbj=1', channelIdType)
+    return await this.parseChannelPlaylistResponse(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async getChannelPlaylistOldest (channelId) {
-    const channelUrl = `https://www.youtube.com/channel/${channelId}/playlists?view=1&sort=da&flow=grid&pbj=1`
-    let channelPageResponse = await helper.makeChannelRequest(channelUrl)
-
-    if (channelPageResponse.error) {
-      // Try again as a user channel
-      const userUrl = `https://www.youtube.com/user/${channelId}/playlists?view=1&sort=da&flow=grid&pbj=1`
-      channelPageResponse = await helper.makeChannelRequest(userUrl)
-
-      if (channelPageResponse.error) {
-        const cUrl = `https://www.youtube.com/c/${channelId}/playlists?view=1&sort=da&flow=grid&pbj=1`
-        channelPageResponse = await helper.makeChannelRequest(cUrl)
-        if (channelPageResponse.error) {
-          return Promise.reject(channelPageResponse.message)
-        }
-      }
-    }
-
-    return await this.parseChannelPlaylistResponse(channelPageResponse)
+  static async getChannelPlaylistOldest (channelId, channelIdType) {
+    const channelPageResponse = await helper.decideUrlRequestType(channelId, 'playlists?view=1&sort=da&flow=grid&pbj=1', channelIdType)
+    return await this.parseChannelPlaylistResponse(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async getChannelPlaylistNewest (channelId) {
-    const channelUrl = `https://www.youtube.com/channel/${channelId}/playlists?view=1&sort=dd&flow=grid&pbj=1`
-    let channelPageResponse = await helper.makeChannelRequest(channelUrl)
-
-    if (channelPageResponse.error) {
-      // Try again as a user channel
-      const userUrl = `https://www.youtube.com/user/${channelId}/playlists?view=1&sort=dd&flow=grid&pbj=1`
-      channelPageResponse = await helper.makeChannelRequest(userUrl)
-
-      if (channelPageResponse.error) {
-        const cUrl = `https://www.youtube.com/c/${channelId}/playlists?view=1&sort=dd&flow=grid&pbj=1`
-        channelPageResponse = await helper.makeChannelRequest(cUrl)
-        if (channelPageResponse.error) {
-          return Promise.reject(channelPageResponse.message)
-        }
-      }
-    }
-
-    return await this.parseChannelPlaylistResponse(channelPageResponse)
+  static async getChannelPlaylistNewest (channelId, channelIdType) {
+    const channelPageResponse = await helper.decideUrlRequestType(channelId, 'playlists?view=1&sort=dd&flow=grid&pbj=1', channelIdType)
+    return await this.parseChannelPlaylistResponse(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async parseChannelPlaylistResponse (response) {
+  static async parseChannelPlaylistResponse (response, channelIdType) {
     const channelMetaData = response.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelId = channelMetaData.externalId
@@ -110,7 +62,8 @@ class PlaylistFetcher {
 
     return {
       continuation: continuation,
-      items: playlistItems
+      items: playlistItems,
+      channelIdType: channelIdType,
     }
   }
 }
