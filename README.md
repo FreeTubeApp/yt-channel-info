@@ -231,8 +231,7 @@ Searches for all posts on the community page of a given channelId based on the g
 
 - `channelIdType` defined as for `getChannelInfo()`
 
-
-  ```javascript
+```javascript
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
 
 ytch.getChannelCommunityPosts(channelId, authorURL='http://www.youtube.com/c/cChannelId').then((response) => {
