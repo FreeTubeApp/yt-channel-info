@@ -101,6 +101,7 @@ class YoutubeGrabberHelper {
     let video
     let liveNow = false
     let premiere = false
+    let premium = false
     let viewCount
     let viewCountText
     let lengthSeconds = 0
@@ -131,6 +132,12 @@ class YoutubeGrabberHelper {
       viewCountText = '0 views'
       const premiereDate = new Date(parseInt(video.upcomingEventData.startTime * 1000))
       publishedText = premiereDate.toLocaleString()
+    } else if (typeof (video.viewCountText) === 'undefined') {
+      premium = true
+      publishedText = video.publishedTimeText.simpleText
+      durationText = 'PREMIERE'
+      viewCount = 0
+      viewCountText = '0 views'
     } else {
       viewCount = parseInt(video.viewCountText.simpleText.split(' ')[0].split(',').join(''))
       viewCountText = video.viewCountText.simpleText
@@ -171,7 +178,8 @@ class YoutubeGrabberHelper {
       durationText: durationText,
       lengthSeconds: lengthSeconds,
       liveNow: liveNow,
-      premiere: premiere
+      premiere: premiere,
+      premium: premium
     }
   }
 
