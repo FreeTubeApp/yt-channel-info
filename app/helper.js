@@ -209,19 +209,30 @@ class YoutubeGrabberHelper {
         // we do not want to access the continuation data like a normal post, but instead later
         return
       }
-
+      if ('sharedPostRenderer' in post.backstagePostThreadRenderer.post) {
+        // this are special and rare posts, we only care about the text no content
+        const postData = this.parseSharedPost(post)
+        postsArray.push(postData)
+        return
+      }
       // Default structure of a post
+      // comment count not available on shared posts
       const postData = {
-        postText: ('runs' in post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText) ? post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs[0].text : null,
+        postText: '',
         postId: post.backstagePostThreadRenderer.post.backstagePostRenderer.postId,
+        author: post.backstagePostThreadRenderer.post.backstagePostRenderer.authorText.runs[0].text,
         authorThumbnails: post.backstagePostThreadRenderer.post.backstagePostRenderer.authorThumbnail.thumbnails,
         publishedText: post.backstagePostThreadRenderer.post.backstagePostRenderer.publishedTimeText.runs[0].text,
         voteCount: post.backstagePostThreadRenderer.post.backstagePostRenderer.voteCount.simpleText,
         postContent: null,
         commentCount: ('text' in post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer) ? post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer.text.simpleText : '0'
       }
+      if ('runs' in post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText) {
+        // eslint-disable-next-line no-return-assign
+        post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs.forEach((element, index) => postData.postText += (index !== 0) ? ' ' + element.text : element.text)
+      }
 
-      // if this exists, then the post contains more data than only text
+      // if this exists, then the post contains more data than only text - Assumption: sharedPostRenderer only has text. Only occurred once so far
       if ('backstageAttachment' in post.backstagePostThreadRenderer.post.backstagePostRenderer) {
         if ('backstageImageRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
           // post with an image
@@ -285,6 +296,21 @@ class YoutubeGrabberHelper {
       postsArray.push(postData)
     })
     return postsArray
+  }
+
+  parseSharedPost(post) {
+    const postData = {
+      postText: '',
+      postId: post.backstagePostThreadRenderer.post.sharedPostRenderer.postId,
+      author: post.backstagePostThreadRenderer.post.sharedPostRenderer.displayName.runs[0].text,
+      authorThumbnails: post.backstagePostThreadRenderer.post.sharedPostRenderer.thumbnail.thumbnails,
+      publishedText: post.backstagePostThreadRenderer.post.sharedPostRenderer.publishedTimeText.runs[0].text,
+      voteCount: post.backstagePostThreadRenderer.post.sharedPostRenderer.originalPost.backstagePostRenderer.voteCount.simpleText,
+      postContent: null,
+      commentCount: ('text' in post.backstagePostThreadRenderer.post.sharedPostRenderer.originalPost.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer) ? post.backstagePostThreadRenderer.post.sharedPostRenderer.originalPost.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer.text.simpleText : '0',
+    }
+    post.backstagePostThreadRenderer.post.sharedPostRenderer.content.runs.forEach((element, index) => postData.postText += (index !== 0) ? ' ' + element.text : element.text)
+    return post
   }
 
   parsePlaylist(obj, channelInfo) {
