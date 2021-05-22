@@ -278,7 +278,8 @@ The objects in the array of community posts all follow a basic structure but var
   ```javascript
 postData = {
   postText: String,
-  postId: String,
+  postId: String, 
+  author: String,
   authorThumbnails: Array[Object], // Array of objects with links to images
   publishedText: String,
   voteCount: String,
