@@ -55,7 +55,10 @@ class YoutubeGrabber {
           author: channelName,
           authorId: author.channelId,
           authorUrl: author.navigationEndpoint.browseEndpoint.canonicalBaseUrl,
-          authorThumbnails: author.thumbnail.thumbnails,
+          authorThumbnails: author.thumbnail.thumbnails.map((thumbnail) => {
+            thumbnail.url = 'https:' + thumbnail.url
+            return thumbnail
+          }),
         }
       })
 
