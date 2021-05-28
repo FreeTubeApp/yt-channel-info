@@ -64,6 +64,7 @@ ytch.getChannelInfo(channelId, channelIdType).then((response) => {
    },
    allowedRegions: Array[String],
    isVerified: Boolean,
+   tags: Array[String],
    channelIdType: Number, 
 }
 ```
