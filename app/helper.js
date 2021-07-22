@@ -134,7 +134,7 @@ class YoutubeGrabberHelper {
       publishedText = premiereDate.toLocaleString()
     } else if (typeof (video.viewCountText) === 'undefined') {
       premium = true
-      publishedText = video.publishedTimeText.simpleText
+	  publishedText = video.publishedTimeText ? video.publishedTimeText.simpleText : undefined
       durationText = 'PREMIERE'
       viewCount = 0
       viewCountText = '0 views'
