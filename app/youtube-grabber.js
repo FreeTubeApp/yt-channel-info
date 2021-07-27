@@ -115,6 +115,8 @@ class YoutubeGrabber {
       isVerified = channelHeaderData.badges.some((badge) => badge.metadataBadgeRenderer.tooltip === 'Verified')
     }
 
+    const tags = channelPageResponse.data[1].response.microformat.microformatDataRenderer.tags || null
+
     const channelInfo = {
       author: channelMetaData.title,
       authorId: channelMetaData.externalId,
@@ -131,6 +133,7 @@ class YoutubeGrabber {
       },
       allowedRegions: channelMetaData.availableCountryCodes,
       isVerified: isVerified,
+      tags: tags,
       channelIdType: decideResponse.channelIdType,
     }
 
