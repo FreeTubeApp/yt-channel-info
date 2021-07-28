@@ -134,11 +134,10 @@ class YoutubeGrabberHelper {
       publishedText = premiereDate.toLocaleString()
     } else if (typeof (video.viewCountText) === 'undefined') {
       premium = true
-      if(typeof (video.publishedTimeText) === 'undefined') {
+      if (typeof (video.publishedTimeText) === 'undefined') {
         var regex = new RegExp('^.*' + channelInfo.channelName + ' (.*?) ago.*', 'g')
         publishedText = video.title.accessibility.accessibilityData.label.replace(regex, '$1')
-      }
-      else { // not sure if this is actually still needed
+      } else {
         publishedText = video.publishedTimeText.simpleText
       }
       durationText = 'PREMIERE'
