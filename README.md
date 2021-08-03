@@ -28,7 +28,7 @@ import ytch from 'yt-channel-info'
 
 ## API
 
-**getChannelInfo(channelId, [channelIdType])**
+**getChannelInfo(channelId, [channelIdType], [httpAgent])**
 
 Returns information about a given channel ID.
 The optional argument 'channelIdType' can be provided to get faster results and less network requests if the type of channel id is known.
@@ -37,6 +37,7 @@ The optional argument 'channelIdType' can be provided to get faster results and 
 - `2` = A user id that is used with `https://www.youtube.com/user/channelId` urls
 - `3` = A name id that is used with `https://www.youtube.com/c/channelId` urls
 
+httpsAgent (Object) (Optional) - Defines Proxy data in an object like https proxy agent. Allows to specify host, port, protocol, authentication (see section Proxy)
 ```javascript
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
 
@@ -69,7 +70,7 @@ ytch.getChannelInfo(channelId, channelIdType).then((response) => {
 }
 ```
 
-**getChannelVideos(channelId, [sortBy], [channelIdType])**
+**getChannelVideos(channelId, [sortBy], [channelIdType], [httpAgent])**
 
 Grabs videos from a given channel ID.
 
@@ -77,6 +78,7 @@ Grabs videos from a given channel ID.
  - `oldest` - Grabs videos from a channel sorted by oldest videos
  - `popular` - Grabs videos from a channel sorted by the most popular (Highest amount of views)
 
+- `httpsAgent` defined as for `getChannelInfo()`
 
 - `channelIdType` defined as for `getChannelInfo()`
  ```javascript
@@ -97,11 +99,14 @@ ytch.getChannelVideos(channelId, sortBy, channelIdType).then((response) => {
  }
  ```
 
- **getChannelVideosMore(continuation)**
+ **getChannelVideosMore(continuation, [httpAgent])**
 
  Grabs more videos within a channel.  Uses the continuation string returned from `getChannelVideos()` or from past calls to `getChannelVideosMore()`.
 
-  ```javascript
+- `httpsAgent` defined as for `getChannelInfo()`
+
+
+ ```javascript
  const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
 
 ytch.getChannelInfoMore(continuation).then((response) => {
@@ -117,14 +122,14 @@ ytch.getChannelInfoMore(continuation).then((response) => {
  }
  ```
 
- **getChannelPlaylistInfo(channelId, [sortBy], [channelIdType])**
+ **getChannelPlaylistInfo(channelId, [sortBy], [channelIdType],[httpAgent])**
 
  Grabs playlist information of a given channel ID.
 
  - `last` - Grabs playlists from a channel sorted by the most recently updated playlist (Default option if none given)
  - `newest` - Grabs playlists from a channel sorted by the creation date (newest first)
 
-
+- `httpsAgent` defined as for `getChannelInfo()`
 - `channelIdType` defined as for `getChannelInfo()` 
   
 ```javascript
@@ -145,10 +150,12 @@ ytch.getChannelPlaylistInfo(channelId, sortBy, channelIdType).then((response) =>
  }
  ```
 
-  **getChannelPlaylistsMore(continuation)**
+  **getChannelPlaylistsMore(continuation, [httpAgent])**
 
  Grabs more playlists within a channel.  Uses the continuation string returned from `getChannelPlaylists()` or from past calls to `getChannelPlaylistsMore()`.
 
+-`httpsAgent` defined as for `getChannelInfo()`
+  
   ```javascript
 const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
 
@@ -165,10 +172,12 @@ ytch.getChannelPlaylistsMore(continuation).then((response) => {
  }
  ```
 
- **searchChannel(channelId, query)**
+ **searchChannel(channelId, query, [httpAgent])**
 
  Searchs for videos and playlists of a given channelId based on the given query
 
+-`httpsAgent` defined as for `getChannelInfo()`
+  
    ```javascript
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
 const query = 'linux'
@@ -186,9 +195,11 @@ ytch.searchChannel(channelId, query).then((response) => {
  }
  ```
 
-  **searchChannelMore(continuation)**
+  **searchChannelMore(continuation, [httpAgent])**
 
  Grabs more search results within a channel.  Uses the continuation string returned from `searchChannel()` or from past calls to `searchChannelMore()`.
+
+-`httpsAgent` defined as for `getChannelInfo()`
 
   ```javascript
 const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
@@ -206,10 +217,12 @@ ytch.searchChannelMore(continuation).then((response) => {
  }
  ```
 
-**getRelatedChannelsMore(continuation)**
+**getRelatedChannelsMore(continuation, [httpAgent])**
 
  Grabs more related channels within a channel.  Uses the relatedChannelsContinuation string returned from `getChannelInfo()` or from past calls to `getRelatedChannelsMore()`.
 
+-`httpsAgent` defined as for `getChannelInfo()`
+  
   ```javascript
  const continuation = '4qmFsgKlARIYVUNtOUs2cmJ5OThXOEppZ0xvWk9oNkZRGlhFZ2hqYUdGdWJtVnNjeGdESUFBd0FUZ0I2Z01vUTJkQlUwZG9iMWxXVlU1M1pXdHNVR1ZzUW5saE1IaGhXWHBhWm1SV1NsSldWazQyVG5wa1VnJTNEJTNEmgIuYnJvd3NlLWZlZWRVQ205SzZyYnk5OFc4SmlnTG9aT2g2RlFjaGFubmVsczE1Ng%3D%3D'
 
@@ -226,10 +239,11 @@ ytch.getRelatedChannelsMore(continuation).then((response) => {
  }
  ```
 
-**getChannelCommunityPosts(channelId, [channelIdType])**
+**getChannelCommunityPosts(channelId, [channelIdType], [httpAgent])**
 
 Searches for all posts on the community page of a given channelId based on the given query.
 
+- `httpsAgent` defined as for `getChannelInfo()`
 - `channelIdType` defined as for `getChannelInfo()`
 
 ```javascript
@@ -250,10 +264,12 @@ ytch.getChannelCommunityPosts(channelId, authorURL='http://www.youtube.com/c/cCh
  }
  ```
 
-**getChannelCommunityPostsMore(continuation, innerTubeApi)**
+**getChannelCommunityPostsMore(continuation, innerTubeApi, [httpAgent])**
 
 Grabs more search results within a channel community page.  Uses the continuation and innerTubeApi strings returned from `getChannelCommunityPosts()` or from past calls to `getChannelCommunityPostsMore()`.
 
+-`httpsAgent` defined as for `getChannelInfo()`
+  
   ```javascript
 const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
 const innerTubeApi = 'JNDJSGJHASJ44DSHGDNLGMHA6FSFas5faF5'
@@ -276,6 +292,8 @@ ytch.getChannelCommunityPostsMore(continuation, innerTubeApi).then((response) =>
 
 The objects in the array of community posts all follow a basic structure but vary drastically in the postContent field of the object.
 
+-`httpsAgent` defined as for `getChannelInfo()`
+  
   ```javascript
 postData = {
   postText: String,
@@ -330,6 +348,14 @@ playlistPostContent = {
 }
 
  ```
+
+### Proxy (HTTP Agent)
+In order to use a proxy, you have to provide an assembled HTTP Agent. This can be achieved via additional packages like https-proxy-agent:
+```
+import HttpsProxyAgent from 'https-proxy-agent';
+const proxy = 'http://127.0.0.1:10003';
+const httpAgent = HttpsProxyAgent(proxy);
+```
 
 ## Tests
 

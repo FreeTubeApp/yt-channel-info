@@ -2,14 +2,15 @@
 const axios = require('axios')
 
 class YoutubeGrabberHelper {
-  constructor () {
+  constructor (httpsAgent) {
     this.session = axios.create({
       timeout: 10000,
       headers: {
         'X-YouTube-Client-Name': '1',
         'X-YouTube-Client-Version': '2.20201021.03.00',
         'accept-language': 'en-US,en;q=0.9'
-      }
+      },
+      httpsAgent: httpsAgent
     })
 
     this.cookies = null
@@ -441,6 +442,10 @@ class YoutubeGrabberHelper {
     }
     return { response: channelPageResponse, channelIdType: 3 }
   }
+
+  static create(httpsAgent) {
+    return new YoutubeGrabberHelper(httpsAgent)
+  }
 }
 
-module.exports = new YoutubeGrabberHelper()
+module.exports = YoutubeGrabberHelper
