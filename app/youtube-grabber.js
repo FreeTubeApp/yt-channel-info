@@ -18,7 +18,7 @@ class YoutubeGrabber {
 
     if (typeof (channelPageResponse.data[1].response.alerts) !== 'undefined') {
       return {
-        alert: response.data[1].response.alerts[0].alertRenderer.text.simpleText
+        alert: channelPageResponse.data[1].response.alerts[0].alertRenderer.text.simpleText
       }
     }
 
