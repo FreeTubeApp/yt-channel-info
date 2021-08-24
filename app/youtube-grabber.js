@@ -17,8 +17,9 @@ class YoutubeGrabber {
     const channelPageResponse = decideResponse.response
 
     if (typeof (channelPageResponse.data[1].response.alerts) !== 'undefined') {
-      const alert = channelPageResponse.data[1].response.alerts[0].alertRenderer.text.simpleText
-      return Promise.reject(alert)
+      return {
+        alert: response.data[1].response.alerts[0].alertRenderer.text.simpleText
+      }
     }
 
     const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
