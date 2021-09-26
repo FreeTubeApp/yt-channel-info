@@ -59,7 +59,7 @@ class YoutubeGrabberHelper {
   async parseChannelVideoResponse(response, channelId, channelIdType) {
     if (typeof (response.data[1].response.alerts) !== 'undefined') {
       return {
-        alert: response.data[1].response.alerts[0].alertRenderer.text.simpleText
+        alertMessage: response.data[1].response.alerts[0].alertRenderer.text.simpleText
       }
     }
 
