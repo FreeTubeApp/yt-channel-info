@@ -71,7 +71,7 @@ ytch.getChannelInfo(channelId, channelIdType).then((response) => {
    isVerified: Boolean,
    tags: Array[String], // Will return null if none exist
    channelIdType: Number, 
-   alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise null
+   alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise undefined
 }
 ```
 
@@ -105,7 +105,7 @@ ytch.getChannelVideos(channelId, sortBy, channelIdType).then((response) => {
    items: Array[Object],
    continuation: String, // Will return null if no more results can be found.  Used with getChannelVideosMore()
    channelIdType: Number,
-   alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise null
+   alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise undefined 
  }
  ```
 
