@@ -58,6 +58,12 @@ class YoutubeGrabberHelper {
   }
 
   async parseChannelVideoResponse(response, channelId, channelIdType) {
+    if (typeof (response.data[1].response.alerts) !== 'undefined') {
+      return {
+        alertMessage: response.data[1].response.alerts[0].alertRenderer.text.simpleText
+      }
+    }
+
     const channelMetaData = response.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelVideoData = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
@@ -235,7 +241,14 @@ class YoutubeGrabberHelper {
       }
       if ('runs' in post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText) {
         // eslint-disable-next-line no-return-assign
-        post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs.forEach((element, index) => postData.postText += (index !== 0) ? ' ' + element.text : element.text)
+        post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs.forEach((element, index) => {
+          if ('navigationEndpoint' in element) {
+            postData.postText += this.extractLinks(element) + ' '
+          } else {
+            postData.postText += element.text + ' '
+          }
+        }
+        )
       }
 
       // if this exists, then the post contains more data than only text - Assumption: sharedPostRenderer only has text. Only occurred once so far
@@ -302,6 +315,15 @@ class YoutubeGrabberHelper {
       postsArray.push(postData)
     })
     return postsArray
+  }
+
+  extractLinks(text) {
+    if ('urlEndpoint' in text.navigationEndpoint) {
+      const linkText = text.navigationEndpoint.urlEndpoint.url
+      return decodeURIComponent(linkText.match(/&q=(.)+/)[0].substring(3))
+    } else {
+      return text.text
+    }
   }
 
   parseSharedPost(post) {
