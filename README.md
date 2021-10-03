@@ -41,7 +41,12 @@ The optional argument 'channelIdType' can be provided to get faster results and 
 const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
 
 ytch.getChannelInfo(channelId, channelIdType).then((response) => {
-   console.log(response)
+   if (!response.alertMessage) {
+      console.log(response)
+   } else {
+      console.log('Channel could not be found.')
+      // throw response.alertMessage
+   }
 }).catch((err) => {
    console.log(err)
 })
@@ -66,6 +71,7 @@ ytch.getChannelInfo(channelId, channelIdType).then((response) => {
    isVerified: Boolean,
    tags: Array[String], // Will return null if none exist
    channelIdType: Number, 
+   alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise undefined
 }
 ```
 
@@ -84,7 +90,12 @@ Grabs videos from a given channel ID.
  const sortBy = 'newest'
 
 ytch.getChannelVideos(channelId, sortBy, channelIdType).then((response) => {
-   console.log(response)
+   if (!response.alertMessage) {
+      console.log(response)
+   } else {
+      console.log('Channel could not be found.')
+      // throw response.alertMessage
+   }
 }).catch((err) => {
    console.log(err)
 })
@@ -94,6 +105,7 @@ ytch.getChannelVideos(channelId, sortBy, channelIdType).then((response) => {
    items: Array[Object],
    continuation: String, // Will return null if no more results can be found.  Used with getChannelVideosMore()
    channelIdType: Number,
+   alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise undefined 
  }
  ```
 
