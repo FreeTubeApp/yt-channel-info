@@ -11,7 +11,7 @@ module.exports = {
   // https://vuejs.github.io/eslint-plugin-vue/user-guide/#faq
   parserOptions: {
     parser: 'babel-eslint',
-    ecmaVersion: 2018,
+    ecmaVersion: 2020,
     sourceType: 'module',
   },
 

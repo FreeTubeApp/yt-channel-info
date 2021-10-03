@@ -13,7 +13,11 @@ class YoutubeGrabber {
    * @param httpAgent
    * @return { Promise<Object> } Return channel information
    * */
-  static async getChannelInfo(channelId, channelIdType = 0, httpAgent = null) {
+  static async getChannelInfo(payload) {
+    const channelId = payload.channelId
+    const channelIdType = payload.channelIdType ?? 0
+    const httpAgent = payload.httpAgent ?? null
+
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'channels?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
@@ -142,7 +146,10 @@ class YoutubeGrabber {
     return channelInfo
   }
 
-  static async getRelatedChannelsMore (continuation, httpAgent = null) {
+  static async getRelatedChannelsMore (payload) {
+    const continuation = payload.continuation
+    const httpAgent = payload.httpAgent ?? null
+
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const urlParams = {
       context: {
@@ -201,7 +208,12 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelVideos (channelId, sortBy = 'newest', channelIdType = 0, httpAgent = null) {
+  static async getChannelVideos (payload) {
+    const channelId = payload.channelId
+    const sortBy = payload.sortBy ?? 'newest'
+    const channelIdType = payload.channelIdType ?? 0
+    const httpAgent = payload.httpAgent ?? null
+
     switch (sortBy) {
       case 'popular':
         return await YoutubeChannelFetcher.getChannelVideosPopular(channelId, channelIdType, httpAgent)
@@ -214,7 +226,10 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelVideosMore (continuation, httpAgent = null) {
+  static async getChannelVideosMore (payload) {
+    const continuation = payload.continuation
+    const httpAgent = payload.httpAgent
+
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const urlParams = {
       context: {
@@ -266,7 +281,12 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelPlaylistInfo (channelId, sortBy = 'last', channelIdType = 0, httpAgent = null) {
+  static async getChannelPlaylistInfo (payload) {
+    const channelId = payload.channelId
+    const sortBy = payload.sortBy ?? 'last'
+    const channelIdType = payload.channelIdType ?? 0
+    const httpAgent = payload.httpAgent ?? null
+
     switch (sortBy) {
       case 'last':
         return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId, channelIdType, httpAgent)
@@ -280,7 +300,10 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelPlaylistsMore (continuation, httpAgent = null) {
+  static async getChannelPlaylistsMore (payload) {
+    const continuation = payload.continuation
+    const httpAgent = payload.httpAgent ?? null
+
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const urlParams = {
       context: {
@@ -333,7 +356,12 @@ class YoutubeGrabber {
     }
   }
 
-  static async searchChannel(channelId, query = '', channelIdType = 0, httpAgent = null) {
+  static async searchChannel(payload) {
+    const channelId = payload.channelId
+    const query = payload.query ?? ''
+    const channelIdType = payload.channelIdType ?? 0
+    const httpAgent = payload.httpAgent ?? null
+
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const urlParams = queryString.stringify({
       query: query,
@@ -399,7 +427,10 @@ class YoutubeGrabber {
     }
   }
 
-  static async searchChannelMore (continuation, httpAgent = null) {
+  static async searchChannelMore (payload) {
+    const continuation = payload.continuation
+    const httpAgent = payload.httpAgent ?? null
+
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const urlParams = {
       context: {
@@ -452,13 +483,21 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelCommunityPosts(channelId, channelIdType = 0, httpAgent = null) {
+  static async getChannelCommunityPosts(payload) {
+    const channelId = payload.channelId
+    const channelIdType = payload.channelIdType ?? 0
+    const httpAgent = payload.httpAgent ?? null
+
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const channelPageResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'community', channelIdType)
     return ytGrabHelp.parseCommunityPage(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async getChannelCommunityPostsMore(continuation, innerAPIKey, httpAgent = null) {
+  static async getChannelCommunityPostsMore(payload) {
+    const continuation = payload.continuation
+    const innerAPIKey = payload.innerTubeApi
+    const httpAgent = payload.httpAgent ?? null
+
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const channelPageResponse = await ytGrabHelp.makeChannelPost(`https://www.youtube.com/youtubei/v1/browse?key=${innerAPIKey}`, {
       context: {
