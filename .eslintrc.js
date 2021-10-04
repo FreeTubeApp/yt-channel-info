@@ -11,6 +11,9 @@ module.exports = {
   // https://vuejs.github.io/eslint-plugin-vue/user-guide/#faq
   parserOptions: {
     parser: 'babel-eslint',
+    // Many methods now accept inputs in "Named parameters/keyword arguments" way
+    // Which is implemented via nullish coalescing (the ?? operator) introduced in ECMAScript 2020
+    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Nullish_coalescing_operator
     ecmaVersion: 2020,
     sourceType: 'module',
   },
