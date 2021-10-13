@@ -319,7 +319,11 @@ class YoutubeGrabberHelper {
   extractLinks(text) {
     if ('urlEndpoint' in text.navigationEndpoint) {
       const linkText = text.navigationEndpoint.urlEndpoint.url
-      return decodeURIComponent(linkText.match(/&q=(.)+/)[0].substring(3))
+      const matches = linkText.match(/&q=(.)+/)
+      if (matches !== null) {
+        return decodeURIComponent(matches[0].substring(3))
+      }
+      return linkText
     } else {
       return text.text
     }
@@ -336,8 +340,8 @@ class YoutubeGrabberHelper {
       postContent: null,
       commentCount: ('text' in post.backstagePostThreadRenderer.post.sharedPostRenderer.originalPost.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer) ? post.backstagePostThreadRenderer.post.sharedPostRenderer.originalPost.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer.text.simpleText : '0',
     }
-    post.backstagePostThreadRenderer.post.sharedPostRenderer.content.runs.forEach((element, index) => postData.postText += (index !== 0) ? ' ' + element.text : element.text)
-    return post
+    post.backstagePostThreadRenderer.post.sharedPostRenderer.content.runs.forEach((element, index) => { postData.postText += (index !== 0) ? ' ' + element.text : element.text })
+    return postData
   }
 
   parsePlaylist(obj, channelInfo) {
