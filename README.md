@@ -28,19 +28,24 @@ import ytch from 'yt-channel-info'
 
 ## API
 
-**getChannelInfo(channelId, [channelIdType])**
-
-Returns information about a given channel ID.
-The optional argument 'channelIdType' can be provided to get faster results and less network requests if the type of channel id is known.
-- `0` = Default value used by the module. It will try all url types in the order channel -> user -> name
-- `1` = A channel id that is used with `https://www.youtube.com/channel/channelId` urls
-- `2` = A user id that is used with `https://www.youtube.com/user/channelId` urls
-- `3` = A name id that is used with `https://www.youtube.com/c/channelId` urls
+**getChannelInfo(payload)**
+- payload (Object) (Required) - An object containing the various options
+  - channelId (String) (Required) - The channel ID to get info from
+  - channelIdType (Integer) (Optional) - Grabs newest comments when `true`. Grabs top comments when `false`
+    - `0` = Default value used by the module. It will try all url types in the order channel -> user -> name
+    - `1` = A channel id that is used with `https://www.youtube.com/channel/channelId` urls
+    - `2` = A user id that is used with `https://www.youtube.com/user/channelId` urls
+    - `3` = A name id that is used with `https://www.youtube.com/c/channelId` urls
+  - httpsAgent (Object) (Optional) -  Defines Proxy data in an object like https proxy agent. Allows to specify host, port, protocol, authentication (see section Proxy)
 
 ```javascript
-const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+const payload = {
+   channelId: 'UCXuqSBlHAE6Xw-yeJA0Tunw', // Required
+   channelIdType: 0,
+   httpsAgent: agent
+}
 
-ytch.getChannelInfo(channelId, channelIdType).then((response) => {
+ytch.getChannelInfo(payload).then((response) => {
    if (!response.alertMessage) {
       console.log(response)
    } else {
@@ -75,21 +80,26 @@ ytch.getChannelInfo(channelId, channelIdType).then((response) => {
 }
 ```
 
-**getChannelVideos(channelId, [sortBy], [channelIdType])**
+**getChannelVideos(payload)**
 
 Grabs videos from a given channel ID.
+- payload (Object) (Required) - An object containing the various options
+  - channelId (String) (Required) - The channel ID to get videos from
+  - sortBy (String) (Optional) - How videos will be sorted
+    - `newest` - Grabs videos from a channel sorted by newest / most recently uploaded (Default option if none given)
+    - `oldest`- Grabs videos from a channel sorted by oldest videos
+    - `popular` - Grabs videos from a channel sorted by the most popular (Highest amount of views)
+  - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()`
+  - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
 
- - `newest` - Grabs videos from a channel sorted by newest / most recently uploaded (Default option if none given)
- - `oldest` - Grabs videos from a channel sorted by oldest videos
- - `popular` - Grabs videos from a channel sorted by the most popular (Highest amount of views)
-
-
-- `channelIdType` defined as for `getChannelInfo()`
  ```javascript
- const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
- const sortBy = 'newest'
+ const payload = {
+    channelId: 'UCXuqSBlHAE6Xw-yeJA0Tunw', // Required
+    sortBy: 'newest',
+    channelIdType: 0
+ }
 
-ytch.getChannelVideos(channelId, sortBy, channelIdType).then((response) => {
+ytch.getChannelVideos(payload).then((response) => {
    if (!response.alertMessage) {
       console.log(response)
    } else {
@@ -109,14 +119,22 @@ ytch.getChannelVideos(channelId, sortBy, channelIdType).then((response) => {
  }
  ```
 
- **getChannelVideosMore(continuation)**
+ **getChannelVideosMore(payload)**
 
  Grabs more videos within a channel.  Uses the continuation string returned from `getChannelVideos()` or from past calls to `getChannelVideosMore()`.
 
-  ```javascript
- const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
+Grabs videos from a given channel ID.
+- payload (Object) (Required) - An object containing the various options
+  - continuation (String) (Required) - The continuation string from `getChannelVideos()` or from past calls to `getChannelVideosMore()`.
+  - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
 
-ytch.getChannelInfoMore(continuation).then((response) => {
+
+ ```javascript
+  const payload = {
+    continuation: '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D', // Required
+ }
+
+ytch.getChannelVideosMore(payload).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -129,21 +147,24 @@ ytch.getChannelInfoMore(continuation).then((response) => {
  }
  ```
 
- **getChannelPlaylistInfo(channelId, [sortBy], [channelIdType])**
+ **getChannelPlaylistInfo(payload)**
 
  Grabs playlist information of a given channel ID.
+ - `payload (Object) (Required)` - An object containing the various options
+   - channelId (String) (Required) - The channel ID to grab playlists from
+   - sortBy (String) (Optional) - 'last' sort by last updated or 'newest' sort by creation date
+      - `last` - Grabs playlists from a channel sorted by the most recently updated playlist (Default option if none given)
+      - `newest` - Grabs playlists from a channel sorted by the creation date (newest first)
+   - httpsAgent (Object) (Optional) - defined as for `getChannelInfo()`
+   - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()` 
 
- - `last` - Grabs playlists from a channel sorted by the most recently updated playlist (Default option if none given)
- - `newest` - Grabs playlists from a channel sorted by the creation date (newest first)
-
-
-- `channelIdType` defined as for `getChannelInfo()` 
-  
 ```javascript
-const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
-const sortBy = 'last'
+const payload = {
+   channelId: 'UCXuqSBlHAE6Xw-yeJA0Tunw',
+   sortBy: 'last',
+}
 
-ytch.getChannelPlaylistInfo(channelId, sortBy, channelIdType).then((response) => {
+ytch.getChannelPlaylistInfo(payload).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -157,14 +178,19 @@ ytch.getChannelPlaylistInfo(channelId, sortBy, channelIdType).then((response) =>
  }
  ```
 
-  **getChannelPlaylistsMore(continuation)**
+  **getChannelPlaylistsMore(payload)**
 
  Grabs more playlists within a channel.  Uses the continuation string returned from `getChannelPlaylists()` or from past calls to `getChannelPlaylistsMore()`.
+ - payload (Object) (Required) - An object containing the various options
+   - continuation (String) (Required) - The continuation string from `getChannelPlaylists()` or from past calls to `getChannelPlaylistsMore()`.
+   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
 
-  ```javascript
-const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
+```javascript
+const payload = {
+   continuation: '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
+}
 
-ytch.getChannelPlaylistsMore(continuation).then((response) => {
+ytch.getChannelPlaylistsMore(payload).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -177,15 +203,21 @@ ytch.getChannelPlaylistsMore(continuation).then((response) => {
  }
  ```
 
- **searchChannel(channelId, query)**
+ **searchChannel(payload)**
 
  Searchs for videos and playlists of a given channelId based on the given query
+ - payload (Object) (Required) - An object containing the various options
+   - channelId (String) (Required) - The channel you want to search
+   - query (String) (Required) - The query you want to use
+   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+  
+```javascript
+const payload = {
+   channelId: 'UCXuqSBlHAE6Xw-yeJA0Tunw',
+   query: 'linux'
+}
 
-   ```javascript
-const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
-const query = 'linux'
-
-ytch.searchChannel(channelId, query).then((response) => {
+ytch.searchChannel(payload).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -198,14 +230,19 @@ ytch.searchChannel(channelId, query).then((response) => {
  }
  ```
 
-  **searchChannelMore(continuation)**
+  **searchChannelMore(payload)**
 
  Grabs more search results within a channel.  Uses the continuation string returned from `searchChannel()` or from past calls to `searchChannelMore()`.
+ - payload (Object) (Required) - An object containing the various options
+   - continuation (String) (Required) - The continuation string from `searchChannel()` or from past calls to `searchChannelMore()`.
+   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
 
-  ```javascript
-const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
+```javascript
+const payload = {
+  continuation: '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D' 
+}
 
-ytch.searchChannelMore(continuation).then((response) => {
+ytch.searchChannelMore(payload).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -218,14 +255,19 @@ ytch.searchChannelMore(continuation).then((response) => {
  }
  ```
 
-**getRelatedChannelsMore(continuation)**
+**getRelatedChannelsMore(payload)**
 
  Grabs more related channels within a channel.  Uses the relatedChannelsContinuation string returned from `getChannelInfo()` or from past calls to `getRelatedChannelsMore()`.
+ - payload (Object) (Required) - An object containing the various options
+   - continuation (String) (Required) - The continuation string from `getChannelInfo()` or from past calls to `getRelatedChannelsMore()`.
+   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+  
+```javascript
+ const payload = {
+    continuation: '4qmFsgKlARIYVUNtOUs2cmJ5OThXOEppZ0xvWk9oNkZRGlhFZ2hqYUdGdWJtVnNjeGdESUFBd0FUZ0I2Z01vUTJkQlUwZG9iMWxXVlU1M1pXdHNVR1ZzUW5saE1IaGhXWHBhWm1SV1NsSldWazQyVG5wa1VnJTNEJTNEmgIuYnJvd3NlLWZlZWRVQ205SzZyYnk5OFc4SmlnTG9aT2g2RlFjaGFubmVsczE1Ng%3D%3D'
+ } 
 
-  ```javascript
- const continuation = '4qmFsgKlARIYVUNtOUs2cmJ5OThXOEppZ0xvWk9oNkZRGlhFZ2hqYUdGdWJtVnNjeGdESUFBd0FUZ0I2Z01vUTJkQlUwZG9iMWxXVlU1M1pXdHNVR1ZzUW5saE1IaGhXWHBhWm1SV1NsSldWazQyVG5wa1VnJTNEJTNEmgIuYnJvd3NlLWZlZWRVQ205SzZyYnk5OFc4SmlnTG9aT2g2RlFjaGFubmVsczE1Ng%3D%3D'
-
-ytch.getRelatedChannelsMore(continuation).then((response) => {
+ytch.getRelatedChannelsMore(payload).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -238,16 +280,22 @@ ytch.getRelatedChannelsMore(continuation).then((response) => {
  }
  ```
 
-**getChannelCommunityPosts(channelId, [channelIdType])**
+**getChannelCommunityPosts(payload)**
 
 Searches for all posts on the community page of a given channelId based on the given query.
 
-- `channelIdType` defined as for `getChannelInfo()`
+- payload (Object) (Required) - An object containing the various options
+  - channelId (String) (Required) - The channel ID to get community posts from
+  - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()`
+  - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+
 
 ```javascript
-const channelId = 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+const payload = {
+   channelId: 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+}
 
-ytch.getChannelCommunityPosts(channelId, authorURL='http://www.youtube.com/c/cChannelId').then((response) => {
+ytch.getChannelCommunityPosts(payload).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -262,15 +310,21 @@ ytch.getChannelCommunityPosts(channelId, authorURL='http://www.youtube.com/c/cCh
  }
  ```
 
-**getChannelCommunityPostsMore(continuation, innerTubeApi)**
+**getChannelCommunityPostsMore(payload)**
 
 Grabs more search results within a channel community page.  Uses the continuation and innerTubeApi strings returned from `getChannelCommunityPosts()` or from past calls to `getChannelCommunityPostsMore()`.
+- payload (Object) (Required) - An object containing the various options
+   - continuation (String) (Required) - The continuation string from `getChannelCommunityPosts()` or from past calls to `getChannelCommunityPostsMore()`.
+   - innterTubeApi (String) (Required) - The innerTubeApi string from `getChannelCommunityPosts()` or from past calls to `getChannelCommunityPostsMore()`.
+   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+  
+```javascript
+const payload = {
+   continuation: '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D',
+   innerTubeApi: 'JNDJSGJHASJ44DSHGDNLGMHA6FSFas5faF5'
+}
 
-  ```javascript
-const continuation = '4qmFsgK9ARIYVUNYdXFTQmxIQUU2WHcteWVKQTBUdW53GqABRWdsd2JHRjViR2x6ZEhNZ0FYcG1VVlZzVUdFeGF6VlNiVkoyV1ZjNWJHVnNUbGhTUmxwWVZrVm9kR1ZHYTNoVU1EVnJUVWR3ZFdNd05VVmFSVVo0Vm10NGRsVnJWa2haYkd4dVUyNXZlbEpxUW5WT1YxRjNXbGhyTkZKcVVqVmhibEpXVkVVNWNtSkdUbnBaYXpWWVUxZDNNMVpSdUFFQQ%3D%3D'
-const innerTubeApi = 'JNDJSGJHASJ44DSHGDNLGMHA6FSFas5faF5'
-
-ytch.getChannelCommunityPostsMore(continuation, innerTubeApi).then((response) => {
+ytch.getChannelCommunityPostsMore(payload).then((response) => {
    console.log(response)
 }).catch((err) => {
    console.log(err)
@@ -288,7 +342,9 @@ ytch.getChannelCommunityPostsMore(continuation, innerTubeApi).then((response) =>
 
 The objects in the array of community posts all follow a basic structure but vary drastically in the postContent field of the object.
 
-  ```javascript
+-`httpsAgent` defined as for `getChannelInfo()`
+  
+```javascript
 postData = {
   postText: String,
   postId: String, 
@@ -307,41 +363,50 @@ imagePostContent = {
 }
 
 pollPostContent = {
-  type: 'poll',
-  content: {
-    choices: Array[String],
-    totalVotes: String }
+   type: 'poll',
+   content: {
+      choices: Array[String],
+      totalVotes: String 
+   }
 }
 
 videoPostContent = {
-  type: 'video',
-  content: {
-    videoId: String,
-    title: String,
-    description: String,
-    publishedText: String,
-    lengthText: String,
-    viewCountText: String,
-    ownerBadges: Object, // Object indicating possible badges {verified: false, officialArtist: false}
-    author: String,
-    thumbnails: Array[Object] // Array of objects with links to images
+   type: 'video',
+   content: {
+      videoId: String,
+      title: String,
+      description: String,
+      publishedText: String,
+      lengthText: String,
+      viewCountText: String,
+      ownerBadges: Object, // Object indicating possible badges {verified: false, officialArtist: false}
+      author: String,
+      thumbnails: Array[Object] // Array of objects with links to images
   }
 }
 
 playlistPostContent = {
-  type: 'playlist',
-  content: {
-    playlistId: String,
-    title: String,
-    playlistVideoRenderer: Array[Object], // An array of minimized videoPostContent data
-    videoCountText: String,
-    ownerBadges: Array[Object],
-    author: String,
-    thumbnails: Array[Object] // Array of objects with links to images
-  }
+   type: 'playlist',
+   content: {
+      playlistId: String,
+      title: String,
+      playlistVideoRenderer: Array[Object], // An array of minimized videoPostContent data
+      videoCountText: String,
+      ownerBadges: Array[Object],
+      author: String,
+      thumbnails: Array[Object] // Array of objects with links to images
+   }
 }
 
  ```
+
+### Proxy (HTTP Agent)
+In order to use a proxy, you have to provide an assembled HTTP Agent. This can be achieved via additional packages like https-proxy-agent:
+```
+import HttpsProxyAgent from 'https-proxy-agent';
+const proxy = 'http://127.0.0.1:10003';
+const httpAgent = HttpsProxyAgent(proxy);
+```
 
 ## Tests
 

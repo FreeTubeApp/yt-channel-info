@@ -6,25 +6,29 @@ class PlaylistFetcher {
     this.getOriginalURL = () => _url
   }
 
-  static async getChannelPlaylistLast (channelId, channelIdType) {
-    const channelPageResponse = await helper.decideUrlRequestType(channelId, 'playlists?flow=grid&sort=lad&view=1&pbj=1', channelIdType)
+  static async getChannelPlaylistLast (channelId, channelIdType, httpAgent = null) {
+    const ytGrabHelp = helper.create(httpAgent)
+    const channelPageResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'playlists?flow=grid&sort=lad&view=1&pbj=1', channelIdType)
     return await this.parseChannelPlaylistResponse(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async getChannelPlaylistOldest (channelId, channelIdType) {
-    const channelPageResponse = await helper.decideUrlRequestType(channelId, 'playlists?view=1&sort=da&flow=grid&pbj=1', channelIdType)
+  static async getChannelPlaylistOldest (channelId, channelIdType, httpAgent = null) {
+    const ytGrabHelp = helper.create(httpAgent)
+    const channelPageResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'playlists?view=1&sort=da&flow=grid&pbj=1', channelIdType)
     return await this.parseChannelPlaylistResponse(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async getChannelPlaylistNewest (channelId, channelIdType) {
-    const channelPageResponse = await helper.decideUrlRequestType(channelId, 'playlists?view=1&sort=dd&flow=grid&pbj=1', channelIdType)
+  static async getChannelPlaylistNewest (channelId, channelIdType, httpAgent = null) {
+    const ytGrabHelp = helper.create(httpAgent)
+    const channelPageResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'playlists?view=1&sort=dd&flow=grid&pbj=1', channelIdType)
     return await this.parseChannelPlaylistResponse(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async parseChannelPlaylistResponse (response, channelIdType) {
+  static async parseChannelPlaylistResponse (response, channelIdType, httpAgent = null) {
     const channelMetaData = response.data[1].response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelId = channelMetaData.externalId
+    const ytGrabHelp = helper.create(httpAgent)
 
     const channelInfo = {
       channelId: channelId,
@@ -44,7 +48,7 @@ class PlaylistFetcher {
     const playlistItems = playlistData.items.filter((playlist) => {
       return typeof (playlist.gridShowRenderer) === 'undefined' && typeof (playlist.continuationItemRenderer) === 'undefined'
     }).map((playlist) => {
-      const item = helper.parsePlaylist(playlist, channelInfo)
+      const item = ytGrabHelp.parsePlaylist(playlist, channelInfo)
       if (item !== null) {
         return item
       }
