@@ -72,7 +72,8 @@ class YoutubeGrabberHelper {
       // Channel has no videos
       return {
         items: [],
-        continuation: null
+        continuation: null,
+        playlistUrl: null
       }
     }
 
@@ -96,11 +97,14 @@ class YoutubeGrabberHelper {
     }).map((item) => {
       return this.parseVideo(item, channelInfo)
     })
+    const playlistId = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.subMenu.channelSubMenuRenderer.playAllButton.buttonRenderer.navigationEndpoint.watchPlaylistEndpoint.playlistId
+    const playlistUrl = `https://www.youtube.com/watch?v=${latestVideos[0].videoId}&list=${playlistId}`
 
     return {
       items: latestVideos,
       continuation: continuation,
       channelIdType: channelIdType,
+      playlistUrl: playlistUrl
     }
   }
 
