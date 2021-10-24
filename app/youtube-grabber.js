@@ -118,8 +118,10 @@ class YoutubeGrabber {
     }
 
     let isVerified = false
+    let isOfficialArtist = false
     if (channelHeaderData.badges) {
-      isVerified = channelHeaderData.badges.some((badge) => badge.metadataBadgeRenderer.tooltip === 'Verified')
+      isVerified = channelHeaderData.badges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED')
+      isOfficialArtist = channelHeaderData.badges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED_ARTIST')
     }
 
     const tags = channelPageResponse.data[1].response.microformat.microformatDataRenderer.tags || null
@@ -140,6 +142,7 @@ class YoutubeGrabber {
       },
       allowedRegions: channelMetaData.availableCountryCodes,
       isVerified: isVerified,
+      isOfficialArtist: isOfficialArtist,
       tags: tags,
       channelIdType: decideResponse.channelIdType,
     }
