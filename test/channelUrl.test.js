@@ -13,7 +13,7 @@ describe('Standalone Mode: Channel URL Testing', () => {
     // https://www.youtube.com/user/youtube
     const parameters = { channelId: 'youtube', channelIdType: 2 }
     return ytch.getChannelInfo(parameters).then((data) => {
-      expect(data.authorId).toBe('UCK8qVjkRMI1lRcYp6_W_1qw')
+      expect(data.author).toBe('YouTube')
     })
   })
 
