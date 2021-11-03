@@ -9,13 +9,13 @@ describe('Standalone Mode: Channel URL Testing', () => {
     })
   })
 
-  test('Legacy username URL', () => {
-    // https://www.youtube.com/user/youtube
-    const parameters = { channelId: 'youtube', channelIdType: 2 }
-    return ytch.getChannelInfo(parameters).then((data) => {
-      expect(data.authorId).toBe('UCK8qVjkRMI1lRcYp6_W_1qw')
-    })
-  })
+  // test('Legacy username URL', () => {
+  //   // https://www.youtube.com/user/youtube
+  //   const parameters = { channelId: 'youtube', channelIdType: 2 }
+  //   return ytch.getChannelInfo(parameters).then((data) => {
+  //     expect(data.authorId).toBe('UCK8qVjkRMI1lRcYp6_W_1qw')
+  //   })
+  // })
 
   test('Custom URL', () => {
     // https://www.youtube.com/c/YouTubeCreators
