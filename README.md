@@ -311,6 +311,34 @@ ytch.getChannelCommunityPosts(payload).then((response) => {
  }
  ```
 
+ **getChannelStats(payload)**
+
+Gets the stats of a channel
+- payload (Object) (Required) - An object containing the various options
+  - channelId (String) (Required) - The channel ID to get stats from
+  - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()`
+  - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+
+
+```javascript
+const payload = {
+   channelId: 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+}
+
+ytch.getChannelStats(payload).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   joined: Integer, // Date joined in ms
+   viewCount: Integer, // Total views on channel
+   location: String // location of channel
+ }
+ ```
+
 **getChannelCommunityPostsMore(payload)**
 
 Grabs more search results within a channel community page.  Uses the continuation and innerTubeApi strings returned from `getChannelCommunityPosts()` or from past calls to `getChannelCommunityPostsMore()`.

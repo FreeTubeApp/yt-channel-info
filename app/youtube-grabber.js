@@ -516,6 +516,32 @@ class YoutubeGrabber {
     const contValue = ('continuationItemRenderer' in postDataArray[postDataArray.length - 1]) ? postDataArray[postDataArray.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token : null
     return { items: ytGrabHelp.createCommunityPostArray(postDataArray), continuation: contValue, innerTubeApi: innerAPIKey }
   }
+
+  static async getChannelStats(payload) {
+    const channelId = payload.channelId
+    const channelIdType = payload.channelIdType ?? 0
+    const httpAgent = payload.httpAgent ?? null
+
+    const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
+    const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'about?flow=grid&view=0&pbj=1', channelIdType)
+    const channelPageResponse = decideResponse.response
+    const headerTabs = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs
+    const aboutTab = headerTabs.filter((data) => {
+      if (typeof data.tabRenderer !== 'undefined') {
+        return data.tabRenderer.title === 'About'
+      }
+      return false
+    })[0]
+    const contents = aboutTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
+    const joined = Date.parse(contents.channelAboutFullMetadataRenderer.joinedDateText.runs[1].text)
+    const views = contents.channelAboutFullMetadataRenderer.viewCountText.simpleText.replace(/\D/g, '')
+    const location = contents.channelAboutFullMetadataRenderer.country.simpleText
+    return {
+      joinedDate: joined,
+      viewCount: parseInt(views),
+      location: location
+    }
+  }
 }
 
 module.exports = YoutubeGrabber
