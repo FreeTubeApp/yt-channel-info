@@ -77,7 +77,7 @@ ytch.getChannelInfo(payload).then((response) => {
    tags: Array[String], // Will return null if none exist
    channelIdType: Number, 
    alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise undefined
-   links: {
+   channelLinks: {
       primaryLinks: Array[Object],
       secondaryLinks: Array[Object]
    }
