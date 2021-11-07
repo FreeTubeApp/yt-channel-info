@@ -339,6 +339,46 @@ ytch.getChannelCommunityPostsMore(payload).then((response) => {
  }
  ```
 
+ **getChannelHome(payload)**
+
+ Searchs for videos and playlists of a given channelId based on the given query
+ - payload (Object) (Required) - An object containing the various options
+   - channelId (String) (Required) - The channel you want to search
+   - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()`
+   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+  
+```javascript
+const payload = {
+   channelId: 'UCXuqSBlHAE6Xw-yeJA0Tunw',
+}
+
+ytch.getChannelHome(payload).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   featuredVideo: {
+      type: 'video',
+      title: String,
+      videoId: String,
+      author: String,
+      authorId: String,
+      videoThumbnails: [],
+      viewCountText: String,
+      viewCount: Number,
+      publishedText: String,
+      durationText: undefined,
+      lengthSeconds: 0,
+      liveNow: Boolean,
+      premier: Boolean,
+      premium: Boolean
+   },
+   items: Array[Object],
+ }
+ ```
 **Community Posts Format**
 
 The objects in the array of community posts all follow a basic structure but vary drastically in the postContent field of the object.
