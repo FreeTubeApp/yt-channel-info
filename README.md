@@ -333,7 +333,7 @@ ytch.getChannelStats(payload).then((response) => {
 
  // Response object
  {
-   joined: Integer, // Date joined in ms
+   joinedDate: Integer, // Date joined in ms
    viewCount: Integer, // Total views on channel
    location: String // location of channel
  }
