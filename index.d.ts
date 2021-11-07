@@ -1,12 +1,36 @@
+import HttpsProxyAgent from 'https-proxy-agent';
 
 declare module "yt-channel-info" {
+
+    enum ChannelIdType {
+        Default = 0,
+        ChannelId,
+        LegacyName,
+        CustomURL
+    }
+
     /**
      * A abstract ChannelInfoResponse containing a continuation string if there are more responses which can be loaded
      * and an array of items of the type T
      */
-    interface ChannelInfoResponse<T> {
+    interface ChannelInfoResponseContinuation<T> {
         items: T[];
         continuation: string | null; // Will return null if no more results can be found.  Used with getChannelPlaylistsMore()
+    }
+
+    interface ChannelInfoResponse<T> extends ChannelInfoResponseContinuation<T> {
+        channelIdType: ChannelIdType;
+        alertMessage?: string;
+    }
+
+    interface ChannelCommunityPostsContinuationResponse extends ChannelInfoResponseContinuation<CommunityPost> {
+        innerTubeApi: string;
+    }
+    interface ChannelCommunityPostsResponse extends ChannelCommunityPostsContinuationResponse {
+        channelIdType: ChannelIdType;
+    }
+    interface VideosResponse extends ChannelInfoResponse<Video> {
+        playlistUrl: string;
     }
 
     interface RelatedChannel {
@@ -14,6 +38,35 @@ declare module "yt-channel-info" {
         authorId: string;
         authorUrl: string;
         authorThumbnails: string[];
+    }
+
+    interface ContinuationPayload {
+        continuation: string;
+        httpsAgent?: HttpsProxyAgent;
+    }
+    /**
+     * ChannelInfo payload passed into getChannelInfo
+     */
+
+    interface ChannelInfoPayload {
+        channelId: string;
+        channelIdType?: ChannelIdType;
+        httpsAgent?: HttpsProxyAgent;
+    }
+
+    interface CommunityPostContinuationPayload extends ContinuationPayload {
+        innerTubeApi: string;
+    }
+    interface ChannelVideosPayload extends ChannelInfoPayload {
+        sortBy?: "newest" | "oldest" | "popular";
+    }
+
+    interface ChannelSearchPayload extends ChannelInfoPayload {
+        query: string;
+    }
+
+    interface ChannelPlaylistPayload extends ChannelInfoPayload {
+        sortBy?: "last" | "oldest" | "newest";
     }
 
     /**
@@ -32,6 +85,9 @@ declare module "yt-channel-info" {
         relatedChannels: RelatedChannel[];
         allowedRegions: string[];
         isVerified: boolean;
+        tags: string[];
+        channelIdType: number;
+        alertMessage: string;
     }
 
     /**
@@ -77,20 +133,81 @@ declare module "yt-channel-info" {
         videoCount: number;
     }
 
+    interface ImagePostContent {
+        type: "image";
+        content: Image[]
+    }
+
+    interface PollPostContent {
+        type: "poll";
+        content: {
+            choices: string[];
+            totalVotes: string
+        }
+    }
+
+    interface VideoPostContent {
+        type: "video";
+        content: {
+            videoId: string;
+            title: string;
+            description: string,
+            publishedText: string,
+            lengthText: string,
+            viewCountText: string,
+            ownerBadges: {
+                verified: boolean;
+                officialArtist: boolean;
+            }, 
+            author: string;
+            thumbnails: Image[];
+        }
+    }
+    interface PlaylistPostContent {
+        type: 'playlist',
+        content: {
+            playlistId: string;
+            title: string;
+            playlistVideoRenderer: VideoPostContent[];
+            videoCountText: string;
+            ownerBadges: {
+                verified: boolean;
+                officialArtist: boolean;
+            }, 
+            author: String,
+            thumbnails: Image[];
+        }
+    }
+    interface CommunityPost {
+        postText: string;
+        postId: string;
+        author: string;
+        authorThumbnails: string;
+        publishedText: string;
+        voteCount: string;
+        postContent: ImagePostContent | PollPostContent | VideoPostContent | PlaylistPostContent | null
+    }
+
     class YoutubeGrabber {
-        static getChannelInfo(channelId: string): Promise<ChannelInfo>;
+        static getChannelInfo(payload: ChannelInfoPayload): Promise<ChannelInfo>;
 
-        static getChannelVideos(channelId: string, sortBy?: "newest" | "oldest" | "popular"): Promise<ChannelInfoResponse<Video>>;
+        static getChannelVideos(payload: ChannelVideosPayload): Promise<VideosResponse>;
 
-        static getChannelVideosMore(continuation: string): Promise<ChannelInfoResponse<Video>>;
+        static getChannelVideosMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<Video>>;
 
-        static getChannelPlaylistInfo(channelId: string, sortBy?: "last" | "oldest" | "newest"): Promise<ChannelInfoResponse<Playlist>>;
+        static getChannelPlaylistInfo(payload: ChannelPlaylistPayload): Promise<ChannelInfoResponse<Playlist>>;
 
-        static getChannelPlaylistsMore(continuation: string): Promise<ChannelInfoResponse<Playlist>>;
+        static getChannelPlaylistsMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<Playlist>>;
 
-        static searchChannel(channelId: string, query: string): Promise<ChannelInfoResponse<Video>>;
+        static searchChannel(payload: ChannelSearchPayload): Promise<ChannelInfoResponseContinuation<Video>>;
 
-        static searchChannelMore(continuation: string): Promise<ChannelInfoResponse<Video>>;
+        static searchChannelMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<Video>>;
+
+        static getRelatedChannelsMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<RelatedChannel>>;
+    
+        static getChannelCommunityPosts(payload: ChannelInfoPayload): Promise<ChannelCommunityPostsResponse>
+        
+        static getChannelCommunityPostsMore(payload: CommunityPostContinuationPayload): Promise<ChannelCommunityPostsContinuationResponse>
     }
     
     export = YoutubeGrabber;

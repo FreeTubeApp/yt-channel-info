@@ -155,6 +155,7 @@ ytch.getChannelVideosMore(payload).then((response) => {
    - channelId (String) (Required) - The channel ID to grab playlists from
    - sortBy (String) (Optional) - 'last' sort by last updated or 'newest' sort by creation date
       - `last` - Grabs playlists from a channel sorted by the most recently updated playlist (Default option if none given)
+      - `oldest` - Grabs playlists from a channel sorted by the creation date (oldest first)
       - `newest` - Grabs playlists from a channel sorted by the creation date (newest first)
    - httpsAgent (Object) (Optional) - defined as for `getChannelInfo()`
    - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()` 
@@ -211,6 +212,7 @@ ytch.getChannelPlaylistsMore(payload).then((response) => {
    - channelId (String) (Required) - The channel you want to search
    - query (String) (Required) - The query you want to use
    - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+   - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()` 
   
 ```javascript
 const payload = {
