@@ -74,6 +74,7 @@ ytch.getChannelInfo(payload).then((response) => {
    },
    allowedRegions: Array[String],
    isVerified: Boolean,
+   isOfficialArtist: Boolean,
    tags: Array[String], // Will return null if none exist
    channelIdType: Number, 
    alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise undefined
