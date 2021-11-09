@@ -427,6 +427,24 @@ class YoutubeGrabberHelper {
     return postData
   }
 
+  parseMix(obj, channelInfo) {
+    const mix = obj.compactStationRenderer
+    const playlistId = mix.navigationEndpoint.watchEndpoint.playlistId
+    const title = mix.title.simpleText
+    const description = mix.description.simpleText
+    const videoCount = parseInt(mix.videoCountText.runs[0].text)
+    const url = mix.navigationEndpoint.commandMetadata.url
+    const thumbnails = mix.thumbnail.thumbnails
+    return {
+      playlistId: playlistId,
+      title: title,
+      description: description,
+      videoCount: videoCount,
+      url: url,
+      thumbnails: thumbnails
+    }
+  }
+
   parsePlaylist(obj, channelInfo) {
     if (typeof (obj.gridShowRenderer) !== 'undefined') {
       return

@@ -569,10 +569,17 @@ class YoutubeGrabber {
           return ytGrabHelp.parseVideo(video, channelInfo)
         })
       } else if (shelfUrl.match(/\/playlists/)) {
-        type = 'playlists'
-        items = shelf.content.horizontalListRenderer.items.map(playlist => {
-          return ytGrabHelp.parsePlaylist(playlist, channelInfo)
-        })
+        if (shelf.content.horizontalListRenderer.items[0].compactStationRenderer != null) {
+          type = 'mix'
+          items = shelf.content.horizontalListRenderer.items.map(mix => {
+            return ytGrabHelp.parseMix(mix, channelInfo)
+          })
+        } else {
+          type = 'playlists'
+          items = shelf.content.horizontalListRenderer.items.map(playlist => {
+            return ytGrabHelp.parsePlaylist(playlist, channelInfo)
+          })
+        }
       }
       return {
         shelfName: shelfName,
