@@ -85,6 +85,7 @@ declare module "yt-channel-info" {
         relatedChannels: RelatedChannel[];
         allowedRegions: string[];
         isVerified: boolean;
+        isOfficialArtist: boolean;
         tags: string[];
         channelIdType: number;
         alertMessage: string;
