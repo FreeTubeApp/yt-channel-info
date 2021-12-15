@@ -15,7 +15,10 @@ declare module "yt-channel-info" {
      */
     interface ChannelInfoResponseContinuation<T> {
         items: T[];
-        continuation: string | null; // Will return null if no more results can be found.  Used with getChannelPlaylistsMore()
+        /**
+        * Will be null if no more results can be found.  Used with getChannelPlaylistsMore()
+        */
+        continuation: string | null;
     }
 
     interface ChannelInfoResponse<T> extends ChannelInfoResponseContinuation<T> {
@@ -76,8 +79,14 @@ declare module "yt-channel-info" {
         author: string;
         authorId: string;
         authorUrl: string;
-        authorBanners: Image[] | null; // Will return null if none exist
-        authorThumbnails: Image[] | null; // Will return null if none exist
+        /**
+        * Is null if none exist
+        **/
+        authorBanners: Image[] | null;
+        /**
+        * Is null if none exist
+        **/
+        authorThumbnails: Image[] | null;
         subscriberText: string;
         subscriberCount: number;
         description: string;
