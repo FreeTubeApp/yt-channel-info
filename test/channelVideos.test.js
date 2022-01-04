@@ -14,25 +14,4 @@ describe('Getting channel videos', () => {
       expect(data.items.length).toBe(0)
     })
   })
-
-  test('Public channel recent videos playlist', () => {
-    const parameters = { channelId: 'UCfMJ2MchTSW2kWaT0kK94Yw', channelIdType: 1, sortBy: 'newest' }
-    return ytch.getChannelVideos(parameters).then((data) => {
-      expect(data.playlistUrl.endsWith('list=UUfMJ2MchTSW2kWaT0kK94Yw')).toBe(true)
-    })
-  })
-
-  test('Public channel oldest videos playlist (non-existent)', () => {
-    const parameters = { channelId: 'UCfMJ2MchTSW2kWaT0kK94Yw', channelIdType: 1, sortBy: 'oldest' }
-    return ytch.getChannelVideos(parameters).then((data) => {
-      expect(data.playlistUrl).toBe(null)
-    })
-  })
-
-  test('Public channel popular videos playlist', () => {
-    const parameters = { channelId: 'UCX6OQ3DkcsbYNE6H8uQQuVA', channelIdType: 1, sortBy: 'popular' }
-    return ytch.getChannelVideos(parameters).then((data) => {
-      expect(data.playlistUrl.endsWith('list=PUX6OQ3DkcsbYNE6H8uQQuVA')).toBe(true)
-    })
-  })
 })
