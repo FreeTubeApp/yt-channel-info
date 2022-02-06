@@ -32,9 +32,6 @@ declare module "yt-channel-info" {
     interface ChannelCommunityPostsResponse extends ChannelCommunityPostsContinuationResponse {
         channelIdType: ChannelIdType;
     }
-    interface VideosResponse extends ChannelInfoResponse<Video> {
-        playlistUrl: string;
-    }
 
     interface RelatedChannel {
         author: string;
@@ -201,7 +198,7 @@ declare module "yt-channel-info" {
     class YoutubeGrabber {
         static getChannelInfo(payload: ChannelInfoPayload): Promise<ChannelInfo>;
 
-        static getChannelVideos(payload: ChannelVideosPayload): Promise<VideosResponse>;
+        static getChannelVideos(payload: ChannelVideosPayload): ChannelInfoResponse<Video>;
 
         static getChannelVideosMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<Video>>;
 
