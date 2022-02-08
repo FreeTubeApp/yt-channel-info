@@ -74,6 +74,7 @@ ytch.getChannelInfo(payload).then((response) => {
    },
    allowedRegions: Array[String],
    isVerified: Boolean,
+   isOfficialArtist: Boolean,
    tags: Array[String], // Will return null if none exist
    channelIdType: Number, 
    alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise undefined
@@ -115,7 +116,6 @@ ytch.getChannelVideos(payload).then((response) => {
    items: Array[Object],
    continuation: String, // Will return null if no more results can be found.  Used with getChannelVideosMore()
    channelIdType: Number,
-   playlistUrl: String, // The url to the channel playlist for "Play all videos"
    alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise undefined 
  }
  ```
