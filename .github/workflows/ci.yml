@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  schedule:
+      # once per day
+    - cron: 0 0 * * *
+  push:
+    branches:
+      - development
+      - master
+  pull_request:
+    branches:
+      - development
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v2
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: npm ci
+    - run: npm run test-ci
+      env:
+           CI: true
