@@ -22,6 +22,29 @@ class YoutubeGrabber {
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'channels?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
 
+    const headerLinks = channelPageResponse.data[1].response.header.c4TabbedHeaderRenderer.headerLinks
+    const links = {
+      primaryLinks: [],
+      secondaryLinks: []
+    }
+    if (typeof headerLinks !== 'undefined') {
+      const channelHeaderLinksData = headerLinks.channelHeaderLinksRenderer
+      links.primaryLinks = channelHeaderLinksData.primaryLinks.map(x => {
+        return {
+          url: decodeURIComponent(x.navigationEndpoint.urlEndpoint.url.match('&q=(.*)')[1]),
+          icon: x.icon.thumbnails[0].url,
+          title: x.title.simpleText
+        }
+      })
+      links.secondaryLinks = channelHeaderLinksData.secondaryLinks.map(x => {
+        return {
+          url: decodeURIComponent(x.navigationEndpoint.urlEndpoint.url.match('&q=(.*)')[1]),
+          icon: x.icon.thumbnails[0].url,
+          title: x.title.simpleText
+        }
+      })
+    }
+
     if (typeof (channelPageResponse.data[1].response.alerts) !== 'undefined') {
       return {
         alertMessage: channelPageResponse.data[1].response.alerts[0].alertRenderer.text.simpleText
@@ -144,6 +167,7 @@ class YoutubeGrabber {
       isVerified: isVerified,
       isOfficialArtist: isOfficialArtist,
       tags: tags,
+      channelLinks: links,
       channelIdType: decideResponse.channelIdType,
     }
 
