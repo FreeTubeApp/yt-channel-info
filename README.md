@@ -90,8 +90,8 @@ Grabs videos from a given channel ID.
     - `newest` - Grabs videos from a channel sorted by newest / most recently uploaded (Default option if none given)
     - `oldest`- Grabs videos from a channel sorted by oldest videos
     - `popular` - Grabs videos from a channel sorted by the most popular (Highest amount of views)
-  - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()`
-  - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+  - channelIdType (Integer) (Optional) - Same definition as 'channelIdType' in `getChannelInfo()`
+  - httpsAgent (Object) (Optional) -  Same definition as 'httpsAgent' in `getChannelInfo()`
 
  ```javascript
  const payload = {
@@ -127,7 +127,7 @@ ytch.getChannelVideos(payload).then((response) => {
 Grabs videos from a given channel ID.
 - payload (Object) (Required) - An object containing the various options
   - continuation (String) (Required) - The continuation string from `getChannelVideos()` or from past calls to `getChannelVideosMore()`.
-  - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+  - httpsAgent (Object) (Optional) -  Same definition as 'httpsAgent' in  `getChannelInfo()`
 
 
  ```javascript
@@ -156,8 +156,8 @@ ytch.getChannelVideosMore(payload).then((response) => {
    - sortBy (String) (Optional) - 'last' sort by last updated or 'newest' sort by creation date
       - `last` - Grabs playlists from a channel sorted by the most recently updated playlist (Default option if none given)
       - `newest` - Grabs playlists from a channel sorted by the creation date (newest first)
-   - httpsAgent (Object) (Optional) - defined as for `getChannelInfo()`
-   - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()` 
+   - httpsAgent (Object) (Optional) - Same definition as 'httpsAgent' in `getChannelInfo()`
+   - channelIdType (Integer) (Optional) - Same definition as 'channelIdType' in `getChannelInfo()` 
 
 ```javascript
 const payload = {
@@ -184,7 +184,7 @@ ytch.getChannelPlaylistInfo(payload).then((response) => {
  Grabs more playlists within a channel.  Uses the continuation string returned from `getChannelPlaylists()` or from past calls to `getChannelPlaylistsMore()`.
  - payload (Object) (Required) - An object containing the various options
    - continuation (String) (Required) - The continuation string from `getChannelPlaylists()` or from past calls to `getChannelPlaylistsMore()`.
-   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+   - httpsAgent (Object) (Optional) -  Same definition as 'httpsAgent' in `getChannelInfo()`
 
 ```javascript
 const payload = {
@@ -210,7 +210,7 @@ ytch.getChannelPlaylistsMore(payload).then((response) => {
  - payload (Object) (Required) - An object containing the various options
    - channelId (String) (Required) - The channel you want to search
    - query (String) (Required) - The query you want to use
-   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+   - httpsAgent (Object) (Optional) -  Same definition as 'httpsAgent' in `getChannelInfo()`
   
 ```javascript
 const payload = {
@@ -236,7 +236,7 @@ ytch.searchChannel(payload).then((response) => {
  Grabs more search results within a channel.  Uses the continuation string returned from `searchChannel()` or from past calls to `searchChannelMore()`.
  - payload (Object) (Required) - An object containing the various options
    - continuation (String) (Required) - The continuation string from `searchChannel()` or from past calls to `searchChannelMore()`.
-   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+   - httpsAgent (Object) (Optional) -  Same definition as 'httpsAgent' in `getChannelInfo()`
 
 ```javascript
 const payload = {
@@ -261,7 +261,7 @@ ytch.searchChannelMore(payload).then((response) => {
  Grabs more related channels within a channel.  Uses the relatedChannelsContinuation string returned from `getChannelInfo()` or from past calls to `getRelatedChannelsMore()`.
  - payload (Object) (Required) - An object containing the various options
    - continuation (String) (Required) - The continuation string from `getChannelInfo()` or from past calls to `getRelatedChannelsMore()`.
-   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+   - httpsAgent (Object) (Optional) -  Same definition as 'httpsAgent' in `getChannelInfo()`
   
 ```javascript
  const payload = {
@@ -287,8 +287,8 @@ Searches for all posts on the community page of a given channelId based on the g
 
 - payload (Object) (Required) - An object containing the various options
   - channelId (String) (Required) - The channel ID to get community posts from
-  - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()`
-  - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+  - channelIdType (Integer) (Optional) - Same definition as 'channelIdType' for `getChannelInfo()`
+  - httpsAgent (Object) (Optional) -  Same definition as 'httpsAgent' in `getChannelInfo()`
 
 
 ```javascript
@@ -311,13 +311,41 @@ ytch.getChannelCommunityPosts(payload).then((response) => {
  }
  ```
 
+ **getChannelStats(payload)**
+
+Gets the stats of a channel
+- payload (Object) (Required) - An object containing the various options
+  - channelId (String) (Required) - The channel ID to get stats from
+  - channelIdType (Integer) (Optional) - Same definition as `channelIdType` in `getChannelInfo()`
+  - httpsAgent (Object) (Optional) -  Same definition as 'httpsAgent' in `getChannelInfo()`
+
+
+```javascript
+const payload = {
+   channelId: 'UCXuqSBlHAE6Xw-yeJA0Tunw'
+}
+
+ytch.getChannelStats(payload).then((response) => {
+   console.log(response)
+}).catch((err) => {
+   console.log(err)
+})
+
+ // Response object
+ {
+   joinedDate: Integer, // Date joined in ms
+   viewCount: Integer, // Total views on channel
+   location: String // location of channel
+ }
+ ```
+
 **getChannelCommunityPostsMore(payload)**
 
 Grabs more search results within a channel community page.  Uses the continuation and innerTubeApi strings returned from `getChannelCommunityPosts()` or from past calls to `getChannelCommunityPostsMore()`.
 - payload (Object) (Required) - An object containing the various options
    - continuation (String) (Required) - The continuation string from `getChannelCommunityPosts()` or from past calls to `getChannelCommunityPostsMore()`.
    - innterTubeApi (String) (Required) - The innerTubeApi string from `getChannelCommunityPosts()` or from past calls to `getChannelCommunityPostsMore()`.
-   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
+   - httpsAgent (Object) (Optional) -  Same definition as 'httpsAgent' in `getChannelInfo()`
   
 ```javascript
 const payload = {
