@@ -23,20 +23,20 @@ class YoutubeGrabber {
     const channelPageResponse = decideResponse.response
 
     const headerLinks = channelPageResponse.data[1].response.header.c4TabbedHeaderRenderer.headerLinks
-    let links = {
+    const links = {
       primaryLinks: [],
       secondaryLinks: []
     }
     if (typeof headerLinks !== 'undefined') {
-      links = headerLinks.channelHeaderLinksRenderer
-      links.primaryLinks = links.primaryLinks.map(x => {
+      const channelHeaderLinksData = headerLinks.channelHeaderLinksRenderer
+      links.primaryLinks = channelHeaderLinksData.primaryLinks.map(x => {
         return {
           url: decodeURIComponent(x.navigationEndpoint.urlEndpoint.url.match('&q=(.*)')[1]),
           icon: x.icon.thumbnails[0].url,
           title: x.title.simpleText
         }
       })
-      links.secondaryLinks = links.secondaryLinks.map(x => {
+      links.secondaryLinks = channelHeaderLinksData.secondaryLinks.map(x => {
         return {
           url: decodeURIComponent(x.navigationEndpoint.urlEndpoint.url.match('&q=(.*)')[1]),
           icon: x.icon.thumbnails[0].url,
