@@ -316,7 +316,7 @@ ytch.getChannelCommunityPosts(payload).then((response) => {
 Gets the stats of a channel
 - payload (Object) (Required) - An object containing the various options
   - channelId (String) (Required) - The channel ID to get stats from
-  - channelIdType (Integer) (Optional) - defined as for `getChannelInfo()`
+  - channelIdType (Integer) (Optional) - Same definition as `channelIdType` in `getChannelInfo()`
   - httpsAgent (Object) (Optional) -  defined as for `getChannelInfo()`
 
 
