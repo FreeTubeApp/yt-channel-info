@@ -104,6 +104,69 @@ class YoutubeGrabberHelper {
     }
   }
 
+  parseFeaturedChannel(author) {
+    let channelName
+    if (typeof (author.title.runs) !== 'undefined') {
+      channelName = author.title.runs[0].text
+    } else {
+      channelName = author.title.simpleText
+    }
+    const channelId = author.channelId
+    const channelUrl = author.navigationEndpoint.browseEndpoint.canonicalBaseUrl
+    const thumbnail = author.thumbnail.thumbnails
+    const videoCount = author.videoCountText.runs[0].text
+    let subscriberText
+    if (author.subscriberCountText) {
+      if (typeof (author.subscriberCountText.runs) !== 'undefined') {
+        subscriberText = author.subscriberCountText.runs[0].text
+      } else {
+        subscriberText = author.subscriberCountText.simpleText
+      }
+    } else {
+      subscriberText = '0 subscribers'
+    }
+
+    const subscriberSplit = subscriberText.split(' ')
+    const subscriberMultiplier = subscriberSplit[0].substring(subscriberSplit[0].length - 1).toLowerCase()
+    let subscriberNumber
+    if (typeof (parseFloat(subscriberMultiplier)) === 'undefined') {
+      subscriberNumber = parseFloat(subscriberText.substring(0, subscriberSplit[0].length - 1))
+    } else {
+      subscriberNumber = parseFloat(subscriberSplit[0])
+    }
+
+    let subscriberCount
+    let verified = false
+    let officialArtist = false
+    if ('ownerBadges' in author) {
+      verified = author.ownerBadges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED')
+      officialArtist = author.ownerBadges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED_ARTIST')
+    }
+
+    switch (subscriberMultiplier) {
+      case 'k':
+        subscriberCount = subscriberNumber * 1000
+        break
+      case 'm':
+        subscriberCount = subscriberNumber * 1000000
+        break
+      default:
+        subscriberCount = subscriberNumber
+    }
+
+    return {
+      channelName: channelName,
+      channelId: channelId,
+      channelUrl: channelUrl,
+      thumbnail: thumbnail,
+      videoCount: videoCount,
+      subscriberText: subscriberText,
+      subscriberCount: subscriberCount,
+      verified: verified,
+      officialArtist: officialArtist
+    }
+  }
+
   parseVideo(obj, channelInfo) {
     let video
     let liveNow = false
@@ -117,12 +180,17 @@ class YoutubeGrabberHelper {
 
     if (typeof (obj.gridVideoRenderer) === 'undefined' && typeof (obj.videoRenderer) !== 'undefined') {
       video = obj.videoRenderer
-    } else {
+    } else if (typeof (obj.gridVideoRenderer) !== 'undefined') {
       video = obj.gridVideoRenderer
+    } else {
+      video = obj.channelVideoPlayerRenderer
     }
 
     let title = video.title.simpleText
-    const statusRenderer = video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer
+    let statusRenderer
+    if (!('channelVideoPlayerRenderer' in obj)) {
+      statusRenderer = video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer
+    }
 
     if (typeof (title) === 'undefined') {
       title = video.title.runs[0].text
@@ -156,7 +224,7 @@ class YoutubeGrabberHelper {
 
       publishedText = video.publishedTimeText.simpleText
 
-      if (typeof (video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer) !== 'undefined') {
+      if (!('channelVideoPlayerRenderer' in obj) && typeof (video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer) !== 'undefined') {
         durationText = video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer.text.simpleText
         const durationSplit = durationText.split(':')
 
@@ -176,6 +244,12 @@ class YoutubeGrabberHelper {
         lengthSeconds = 0
       }
     }
+    let thumbnails = []
+    if (!('channelVideoPlayerRenderer' in obj)) {
+      thumbnails = video.thumbnail.thumbnails
+    } else {
+      publishedText = video.publishedTimeText.runs[0].text
+    }
 
     return {
       type: 'video',
@@ -183,7 +257,7 @@ class YoutubeGrabberHelper {
       videoId: video.videoId,
       author: channelInfo.channelName,
       authorId: channelInfo.channelId,
-      videoThumbnails: video.thumbnail.thumbnails,
+      videoThumbnails: thumbnails,
       viewCountText: viewCountText,
       viewCount: viewCount,
       publishedText: publishedText,
@@ -343,6 +417,24 @@ class YoutubeGrabberHelper {
     }
     post.backstagePostThreadRenderer.post.sharedPostRenderer.content.runs.forEach((element, index) => { postData.postText += (index !== 0) ? ' ' + element.text : element.text })
     return postData
+  }
+
+  parseMix(obj, channelInfo) {
+    const mix = obj.compactStationRenderer
+    const playlistId = mix.navigationEndpoint.watchEndpoint.playlistId
+    const title = mix.title.simpleText
+    const description = mix.description.simpleText
+    const videoCount = parseInt(mix.videoCountText.runs[0].text)
+    const url = mix.navigationEndpoint.commandMetadata.url
+    const thumbnails = mix.thumbnail.thumbnails
+    return {
+      playlistId: playlistId,
+      title: title,
+      description: description,
+      videoCount: videoCount,
+      url: url,
+      thumbnails: thumbnails
+    }
   }
 
   parsePlaylist(obj, channelInfo) {
