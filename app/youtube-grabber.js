@@ -46,7 +46,7 @@ class YoutubeGrabber {
             title: x.title.simpleText
           }
         })
-      }    
+      }
     }
     if (typeof (channelPageResponse.data[1].response.alerts) !== 'undefined') {
       return {
