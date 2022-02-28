@@ -36,7 +36,7 @@ class YoutubeGrabber {
           title: x.title.simpleText
         }
       })
-      if (typeof links.secondaryLinks !== 'undefined') {
+      if (typeof channelHeaderLinksData.secondaryLinks !== 'undefined') {
         links.secondaryLinks = channelHeaderLinksData.secondaryLinks.map(x => {
           const url = x.navigationEndpoint.urlEndpoint.url
           const match = url.match('&q=(.*)')
