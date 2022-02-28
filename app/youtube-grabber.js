@@ -36,17 +36,18 @@ class YoutubeGrabber {
           title: x.title.simpleText
         }
       })
-      links.secondaryLinks = channelHeaderLinksData.secondaryLinks.map(x => {
-        const url = x.navigationEndpoint.urlEndpoint.url
-        const match = url.match('&q=(.*)')
-        return {
-          url: match === null ? url : decodeURIComponent(match[1]),
-          icon: x.icon.thumbnails[0].url,
-          title: x.title.simpleText
-        }
-      })
+      if (typeof links.secondaryLinks !== 'undefined') {
+        links.secondaryLinks = channelHeaderLinksData.secondaryLinks.map(x => {
+          const url = x.navigationEndpoint.urlEndpoint.url
+          const match = url.match('&q=(.*)')
+          return {
+            url: match === null ? url : decodeURIComponent(match[1]),
+            icon: x.icon.thumbnails[0].url,
+            title: x.title.simpleText
+          }
+        })
+      }    
     }
-
     if (typeof (channelPageResponse.data[1].response.alerts) !== 'undefined') {
       return {
         alertMessage: channelPageResponse.data[1].response.alerts[0].alertRenderer.text.simpleText
