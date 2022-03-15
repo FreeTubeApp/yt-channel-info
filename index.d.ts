@@ -34,10 +34,15 @@ declare module "yt-channel-info" {
     }
 
     interface RelatedChannel {
-        author: string;
-        authorId: string;
-        authorUrl: string;
-        authorThumbnails: string[];
+        channelName: string;
+        channelId: string;
+        channelUrl: string;
+        thumbnail: Image[];
+        videoCount: number;
+        subscriberText: string;
+        subscriberCount: number;
+        verified: boolean;
+        officialArist: boolean;
     }
 
     interface ContinuationPayload {
@@ -116,6 +121,7 @@ declare module "yt-channel-info" {
         lengthSeconds: number;
         liveNow: boolean;
         premiere: boolean;
+        premium: boolean;
         publishedText: string;
         title: string;
         type: "video";
@@ -195,6 +201,29 @@ declare module "yt-channel-info" {
         postContent: ImagePostContent | PollPostContent | VideoPostContent | PlaylistPostContent | null
     }
 
+
+    interface ChannelStatsResponse {
+        joinedDate: number;
+        viewCount: number;
+        location: string;
+    }
+
+    interface Mix {
+        playlistId: string;
+        title: string;
+        description: string;
+        videoCount: number;
+        url: string;
+        thumbnails: Image[]
+    }
+    interface ChannelHomeResponse {
+        featuredVideo : Video
+        items: {
+            shelfName: string;
+            type: 'videos' | 'verticalVideoList' | 'playlist' | 'channels' | 'mix' | 'playlists' | 'video'
+            items: Video[] | RelatedChannel[] | Playlist[] | Mix
+        }
+    }
     class YoutubeGrabber {
         static getChannelInfo(payload: ChannelInfoPayload): Promise<ChannelInfo>;
 
@@ -215,6 +244,10 @@ declare module "yt-channel-info" {
         static getChannelCommunityPosts(payload: ChannelInfoPayload): Promise<ChannelCommunityPostsResponse>
         
         static getChannelCommunityPostsMore(payload: CommunityPostContinuationPayload): Promise<ChannelCommunityPostsContinuationResponse>
+        
+        static getChannelStats(payload: ChannelInfoPayload): Promise<ChannelStatsResponse>
+        
+        static getChannelHome(payload: ChannelInfoPayload): Promise<ChannelHomeResponse>
     }
     
     export = YoutubeGrabber;
