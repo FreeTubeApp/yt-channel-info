@@ -58,15 +58,15 @@ class YoutubeGrabberHelper {
   }
 
   async parseChannelVideoResponse(response, channelId, channelIdType) {
-    if (typeof (response.data[1].response.alerts) !== 'undefined') {
+    if (typeof (response.data.response.alerts) !== 'undefined') {
       return {
-        alertMessage: response.data[1].response.alerts[0].alertRenderer.text.simpleText
+        alertMessage: response.data.response.alerts[0].alertRenderer.text.simpleText
       }
     }
 
-    const channelMetaData = response.data[1].response.metadata.channelMetadataRenderer
+    const channelMetaData = response.data.response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
-    const channelVideoData = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    const channelVideoData = response.data.response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
 
     if (typeof (channelVideoData) === 'undefined') {
       // Channel has no videos
