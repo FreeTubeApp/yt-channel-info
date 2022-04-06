@@ -21,8 +21,7 @@ class YoutubeGrabber {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'channels?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
-
-    const headerLinks = channelPageResponse.data[1].response.header.c4TabbedHeaderRenderer.headerLinks
+    const headerLinks = channelPageResponse.data.response.header.c4TabbedHeaderRenderer.headerLinks
     const links = {
       primaryLinks: [],
       secondaryLinks: []
@@ -48,15 +47,15 @@ class YoutubeGrabber {
         })
       }
     }
-    if (typeof (channelPageResponse.data[1].response.alerts) !== 'undefined') {
+    if (typeof (channelPageResponse.data.response.alerts) !== 'undefined') {
       return {
-        alertMessage: channelPageResponse.data[1].response.alerts[0].alertRenderer.text.simpleText
+        alertMessage: channelPageResponse.data.response.alerts[0].alertRenderer.text.simpleText
       }
     }
 
-    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
-    const channelHeaderData = channelPageResponse.data[1].response.header.c4TabbedHeaderRenderer
-    const headerTabs = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs
+    const channelMetaData = channelPageResponse.data.response.metadata.channelMetadataRenderer
+    const channelHeaderData = channelPageResponse.data.response.header.c4TabbedHeaderRenderer
+    const headerTabs = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs
 
     const channelsTab = headerTabs.filter((data) => {
       if (typeof data.tabRenderer !== 'undefined') {
@@ -136,7 +135,7 @@ class YoutubeGrabber {
       isOfficialArtist = channelHeaderData.badges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED_ARTIST')
     }
 
-    const tags = channelPageResponse.data[1].response.microformat.microformatDataRenderer.tags || null
+    const tags = channelPageResponse.data.response.microformat.microformatDataRenderer.tags || null
 
     const channelInfo = {
       author: channelMetaData.title,
@@ -390,7 +389,7 @@ class YoutubeGrabber {
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, `search?${urlParams}`, channelIdType)
     const channelPageResponse = decideResponse.response
 
-    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    const channelMetaData = channelPageResponse.data.response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
 
     const channelInfo = {
@@ -399,13 +398,13 @@ class YoutubeGrabber {
       channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
 
-    const searchTab = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs.findIndex((tab) => {
+    const searchTab = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs.findIndex((tab) => {
       if (typeof (tab.expandableTabRenderer) !== 'undefined') {
         return true
       }
     })
 
-    const searchResults = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[searchTab].expandableTabRenderer.content.sectionListRenderer
+    const searchResults = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs[searchTab].expandableTabRenderer.content.sectionListRenderer
 
     let continuation = null
 
@@ -545,7 +544,7 @@ class YoutubeGrabber {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'about?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
-    const headerTabs = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs
+    const headerTabs = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs
     const aboutTab = headerTabs.filter((data) => {
       if (typeof data.tabRenderer !== 'undefined') {
         return data.tabRenderer.title === 'About'
@@ -571,9 +570,9 @@ class YoutubeGrabber {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'home?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
-    const headerTabs = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs
+    const headerTabs = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs
 
-    const channelMetaData = channelPageResponse.data[1].response.metadata.channelMetadataRenderer
+    const channelMetaData = channelPageResponse.data.response.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelUrl = channelMetaData.vanityChannelUrl
 
