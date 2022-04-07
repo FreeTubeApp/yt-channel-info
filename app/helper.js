@@ -139,9 +139,9 @@ class YoutubeGrabberHelper {
       verified = author.ownerBadges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED')
       officialArtist = author.ownerBadges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED_ARTIST')
     }
-    if (subscriberMultiplier == 'k') {
+    if (subscriberMultiplier === 'k') {
       subscriberCount *= 1000
-    } else if (subscriberMultiplier == 'm') {
+    } else if (subscriberMultiplier === 'm') {
       subscriberCount *= 1000000
     }
     return {

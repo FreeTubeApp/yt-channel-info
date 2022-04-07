@@ -112,9 +112,9 @@ class YoutubeGrabber {
     }
 
     let subscriberCount = subscriberNumber
-    if (subscriberMultiplier == 'k') {
+    if (subscriberMultiplier === 'k') {
       subscriberCount *= 1000
-    } else if (subscriberMultiplier == 'm') {
+    } else if (subscriberMultiplier === 'm') {
       subscriberCount *= 1000000
     }
 
@@ -204,9 +204,9 @@ class YoutubeGrabber {
   }
 
   static async getChannelVideos({ channelId, sortBy = 'newest', channelIdType = 0, httpAgent = null }) {
-    if (sortBy == 'popular') {
+    if (sortBy === 'popular') {
       return await YoutubeChannelFetcher.getChannelVideosPopular(channelId, channelIdType, httpAgent)
-    } else if (sortBy == 'oldest') {
+    } else if (sortBy === 'oldest') {
       return await YoutubeChannelFetcher.getChannelVideosOldest(channelId, channelIdType, httpAgent)
     } else { // newest
       return await YoutubeChannelFetcher.getChannelVideosNewest(channelId, channelIdType, httpAgent)
@@ -258,12 +258,12 @@ class YoutubeGrabber {
   }
 
   static async getChannelPlaylistInfo({ channelId, sortBy = 'last', channelIdType = 0, httpAgent = null }) {
-    if (sortBy == 'newst') {
+    if (sortBy === 'newest') {
       return await YoutubePlaylistFetcher.getChannelPlaylistNewest(channelId, channelIdType, httpAgent)
-    } else if (sortBy == 'oldest') {
+    } else if (sortBy === 'oldest') {
       console.warn("yt-channel-info: Fetching by oldest isn't available in YouTube any more. This option will be removed in a later update.")
       return await YoutubePlaylistFetcher.getChannelPlaylistOldest(channelId, channelIdType, httpAgent)
-    } else {
+    } else { // last
       return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId, channelIdType, httpAgent)
     }
   }
