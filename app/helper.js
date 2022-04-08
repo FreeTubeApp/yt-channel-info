@@ -381,6 +381,13 @@ class YoutubeGrabberHelper {
             })
           }
           )
+        } else if ('postMultiImageRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
+          postData.postContent = {
+            type: 'multiImage',
+            content: post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.postMultiImageRenderer.images.map(im => {
+              return im.backstageImageRenderer.image.thumbnails
+            })
+          }
         } else {
           console.error('New type of post detected. Please report this to the repository with the log and channel that was scraped')
           console.log(post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.keys())
