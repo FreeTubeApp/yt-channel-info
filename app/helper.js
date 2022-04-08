@@ -12,9 +12,6 @@ class YoutubeGrabberHelper {
       },
       httpsAgent: httpsAgent
     })
-
-    this.cookies = null
-    this.test = 'hello'
   }
 
   /**
@@ -135,25 +132,18 @@ class YoutubeGrabberHelper {
       subscriberNumber = parseFloat(subscriberSplit[0])
     }
 
-    let subscriberCount
+    let subscriberCount = subscriberNumber
     let verified = false
     let officialArtist = false
     if ('ownerBadges' in author) {
       verified = author.ownerBadges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED')
       officialArtist = author.ownerBadges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED_ARTIST')
     }
-
-    switch (subscriberMultiplier) {
-      case 'k':
-        subscriberCount = subscriberNumber * 1000
-        break
-      case 'm':
-        subscriberCount = subscriberNumber * 1000000
-        break
-      default:
-        subscriberCount = subscriberNumber
+    if (subscriberMultiplier === 'k') {
+      subscriberCount *= 1000
+    } else if (subscriberMultiplier === 'm') {
+      subscriberCount *= 1000000
     }
-
     return {
       channelName: channelName,
       channelId: channelId,
@@ -487,20 +477,6 @@ class YoutubeGrabberHelper {
       playlistUrl: `https://www.youtube.com/playlist?list=${playlist.playlistId}`,
       videoCount: videoCount
     }
-  }
-
-  /**
-     * Get the existing status of resource
-     * @param { string } url The url of youtube resource
-     * @returns { Promise<boolean> } Return TRUE if resource is exists
-     * */
-  async isResourceExists(url) {
-    const response = await YoutubeGrabberHelper.getResource(url)
-    if (!response) return false
-
-    const $ = cheerio.load(response.data)
-    const metaTags = $('meta[name="title"]')
-    return metaTags.length !== 0
   }
 
   async decideUrlRequestType(channelId, urlAppendix, channelIdType) {
