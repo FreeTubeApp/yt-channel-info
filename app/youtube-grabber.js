@@ -1,5 +1,4 @@
 const YoutubeGrabberHelper = require('./helper')
-const queryString = require('querystring')
 
 // Fetchers
 const YoutubeChannelFetcher = require('./fetchers/channel')
@@ -156,7 +155,7 @@ class YoutubeGrabber {
 
     return channelInfo
   }
-  
+
   static async getRelatedChannelsMore({ continuation, httpAgent = null }) {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const urlParams = this.GetContinuationUrlParams(continuation)
@@ -437,9 +436,9 @@ class YoutubeGrabber {
     return ytGrabHelp.parseCommunityPage(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async getChannelCommunityPostsMore({ continuation, innerTubeApi, httpAgent = null}) {
+  static async getChannelCommunityPostsMore({ continuation, innerTubeApi, httpAgent = null }) {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
-    const channelPageResponse = await ytGrabHelp.makeChannelPost(`https://www.youtube.com/youtubei/v1/browse?key=${innerAPIKey}`,
+    const channelPageResponse = await ytGrabHelp.makeChannelPost(`https://www.youtube.com/youtubei/v1/browse?key=${innerTubeApi}`,
       this.GetContinuationUrlParams(continuation)
     )
     if (channelPageResponse.error) {
@@ -600,6 +599,7 @@ class YoutubeGrabber {
       items: homeItems
     }
   }
+
   static GetContinuationUrlParams(continuation) {
     return {
       context: {
