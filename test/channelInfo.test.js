@@ -23,14 +23,14 @@ describe('Getting channel info', () => {
     })
   })
 
-  test('Get Related Channels more', () => {
-    const parameters = { channelId: 'LinusTechTips', channelIdType: 2 }
-    return ytch.getChannelInfo(parameters).then((data) => {
-      return ytch.getRelatedChannelsMore({ continuation: data.relatedChannels.continuation }).then((rel) => {
-        expect(rel.items.length).not.toBe(0)
-      })
-    })
-  })
+  // test('Get Related Channels more', () => {
+  //   const parameters = { channelId: 'LinusTechTips', channelIdType: 2 }
+  //   return ytch.getChannelInfo(parameters).then((data) => {
+  //     return ytch.getRelatedChannelsMore({ continuation: data.relatedChannels.continuation }).then((rel) => {
+  //       expect(rel.items.length).not.toBe(0)
+  //     })
+  //   })
+  // })
 
   test('Public channel with private subscriber count.', () => {
     const parameters = { channelId: 'UCemb7r7IyrvY-AFPqsDjs7w', channelIdType: 0 }
