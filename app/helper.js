@@ -55,15 +55,19 @@ class YoutubeGrabberHelper {
   }
 
   async parseChannelVideoResponse(response, channelId, channelIdType) {
-    if (typeof (response.data.response.alerts) !== 'undefined') {
+    let channelPageDataResponse = response.data.response
+    if (typeof (channelPageDataResponse) === 'undefined') {
+      channelPageDataResponse = response.data[1].response
+    }
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
       return {
-        alertMessage: response.data.response.alerts[0].alertRenderer.text.simpleText
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
       }
     }
 
-    const channelMetaData = response.data.response.metadata.channelMetadataRenderer
+    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
-    const channelVideoData = response.data.response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    const channelVideoData = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
 
     if (typeof (channelVideoData) === 'undefined') {
       // Channel has no videos
@@ -111,7 +115,10 @@ class YoutubeGrabberHelper {
     const channelId = author.channelId
     const channelUrl = author.navigationEndpoint.browseEndpoint.canonicalBaseUrl
     const thumbnail = author.thumbnail.thumbnails
-    const videoCount = author.videoCountText.runs[0].text
+    let videoCount = 0
+    if ('videoCout' in author) {
+      videoCount = author.videoCountText.runs[0].text
+    }
     let subscriberText
     if (author.subscriberCountText) {
       if (typeof (author.subscriberCountText.runs) !== 'undefined') {
