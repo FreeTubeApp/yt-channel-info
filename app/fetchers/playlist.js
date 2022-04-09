@@ -25,7 +25,11 @@ class PlaylistFetcher {
   }
 
   static async parseChannelPlaylistResponse (response, channelIdType, httpAgent = null) {
-    const channelMetaData = response.data.response.metadata.channelMetadataRenderer
+    let channelPageDataResponse = response.data.response
+    if (typeof (channelPageDataResponse) === 'undefined') {
+      channelPageDataResponse = response.data[1].response
+    }
+    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
     const channelId = channelMetaData.externalId
     const ytGrabHelp = helper.create(httpAgent)
@@ -36,7 +40,7 @@ class PlaylistFetcher {
       channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
 
-    const playlistData = response.data.response.contents.twoColumnBrowseResultsRenderer.tabs[2].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    const playlistData = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[2].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
 
     if (typeof (playlistData) === 'undefined') {
       return {

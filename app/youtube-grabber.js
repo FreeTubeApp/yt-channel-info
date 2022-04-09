@@ -1,5 +1,4 @@
 const YoutubeGrabberHelper = require('./helper')
-const queryString = require('querystring')
 
 // Fetchers
 const YoutubeChannelFetcher = require('./fetchers/channel')
@@ -17,7 +16,11 @@ class YoutubeGrabber {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'channels?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
-    const headerLinks = channelPageResponse.data.response.header.c4TabbedHeaderRenderer.headerLinks
+    let channelPageDataResponse = channelPageResponse.data.response
+    if (channelPageResponse.data.response === undefined) {
+      channelPageDataResponse = channelPageResponse.data[1].response
+    }
+    const headerLinks = channelPageDataResponse.header.c4TabbedHeaderRenderer.headerLinks
     const links = {
       primaryLinks: [],
       secondaryLinks: []
@@ -43,15 +46,16 @@ class YoutubeGrabber {
         })
       }
     }
-    if (typeof (channelPageResponse.data.response.alerts) !== 'undefined') {
+
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
       return {
-        alertMessage: channelPageResponse.data.response.alerts[0].alertRenderer.text.simpleText
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
       }
     }
 
-    const channelMetaData = channelPageResponse.data.response.metadata.channelMetadataRenderer
-    const channelHeaderData = channelPageResponse.data.response.header.c4TabbedHeaderRenderer
-    const headerTabs = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs
+    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
+    const channelHeaderData = channelPageDataResponse.header.c4TabbedHeaderRenderer
+    const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
 
     const channelsTab = headerTabs.filter((data) => {
       if (typeof data.tabRenderer !== 'undefined') {
@@ -125,7 +129,7 @@ class YoutubeGrabber {
       isOfficialArtist = channelHeaderData.badges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED_ARTIST')
     }
 
-    const tags = channelPageResponse.data.response.microformat.microformatDataRenderer.tags || null
+    const tags = channelPageDataResponse.microformat.microformatDataRenderer.tags || null
 
     const channelInfo = {
       author: channelMetaData.title,
@@ -151,7 +155,7 @@ class YoutubeGrabber {
 
     return channelInfo
   }
-  
+
   static async getRelatedChannelsMore({ continuation, httpAgent = null }) {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const urlParams = this.GetContinuationUrlParams(continuation)
@@ -324,8 +328,11 @@ class YoutubeGrabber {
 
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, `search?${urlParams}`, channelIdType)
     const channelPageResponse = decideResponse.response
-
-    const channelMetaData = channelPageResponse.data.response.metadata.channelMetadataRenderer
+    let channelPageDataResponse = channelPageResponse.data.response
+    if (typeof channelPageDataResponse === 'undefined') {
+      channelPageDataResponse = channelPageResponse.data[1].response
+    }
+    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
 
     const channelInfo = {
@@ -334,13 +341,13 @@ class YoutubeGrabber {
       channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
 
-    const searchTab = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs.findIndex((tab) => {
+    const searchTab = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs.findIndex((tab) => {
       if (typeof (tab.expandableTabRenderer) !== 'undefined') {
         return true
       }
     })
 
-    const searchResults = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs[searchTab].expandableTabRenderer.content.sectionListRenderer
+    const searchResults = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[searchTab].expandableTabRenderer.content.sectionListRenderer
 
     let continuation = null
 
@@ -393,7 +400,6 @@ class YoutubeGrabber {
     let nextContinuation = null
 
     const continuationData = channelPageResponse.data.onResponseReceivedActions[0].appendContinuationItemsAction.continuationItems
-
     const continuationItem = continuationData.filter((item) => {
       return typeof (item.continuationItemRenderer) !== 'undefined'
     })
@@ -430,9 +436,9 @@ class YoutubeGrabber {
     return ytGrabHelp.parseCommunityPage(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async getChannelCommunityPostsMore({ continuation, innerTubeApi, httpAgent = null}) {
+  static async getChannelCommunityPostsMore({ continuation, innerTubeApi, httpAgent = null }) {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
-    const channelPageResponse = await ytGrabHelp.makeChannelPost(`https://www.youtube.com/youtubei/v1/browse?key=${innerAPIKey}`,
+    const channelPageResponse = await ytGrabHelp.makeChannelPost(`https://www.youtube.com/youtubei/v1/browse?key=${innerTubeApi}`,
       this.GetContinuationUrlParams(continuation)
     )
     if (channelPageResponse.error) {
@@ -451,7 +457,12 @@ class YoutubeGrabber {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'about?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
-    const headerTabs = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs
+    let headerTabs
+    if (channelPageResponse.data.response) {
+      headerTabs = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs
+    } else {
+      headerTabs = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs
+    }
     const aboutTab = headerTabs.filter((data) => {
       if (typeof data.tabRenderer !== 'undefined') {
         return data.tabRenderer.title === 'About'
@@ -460,8 +471,16 @@ class YoutubeGrabber {
     })[0]
     const contents = aboutTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
     const joined = Date.parse(contents.channelAboutFullMetadataRenderer.joinedDateText.runs[1].text)
-    const views = contents.channelAboutFullMetadataRenderer.viewCountText.simpleText.replace(/\D/g, '')
-    const location = contents.channelAboutFullMetadataRenderer.country.simpleText
+    let views = '0'
+    let location = 'unknown'
+    if ('viewCountText' in contents.channelAboutFullMetadataRenderer) {
+      views = contents.channelAboutFullMetadataRenderer.viewCountText.simpleText.replace(/\D/g, '')
+    }
+
+    if ('country' in contents.channelAboutFullMetadataRenderer) {
+      location = contents.channelAboutFullMetadataRenderer.country.simpleText
+    }
+
     return {
       joinedDate: joined,
       viewCount: parseInt(views),
@@ -477,11 +496,21 @@ class YoutubeGrabber {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'home?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
-    const headerTabs = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs
-
-    const channelMetaData = channelPageResponse.data.response.metadata.channelMetadataRenderer
-    const channelName = channelMetaData.title
-    const channelUrl = channelMetaData.vanityChannelUrl
+    let channelPageDataResponse = channelPageResponse.data.response
+    if (typeof channelPageDataResponse === 'undefined') {
+      channelPageDataResponse = channelPageResponse.data[1].response
+    }
+    const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
+    let channelName
+    let channelUrl
+    if ('metadata' in channelPageDataResponse) {
+      channelName = channelPageDataResponse.metadata.channelMetadataRenderer.title
+      channelUrl = channelPageDataResponse.metadata.channelMetadataRenderer.vanityChannelUrl
+    } else {
+      const channelDetails = channelPageResponse.data[1].response.header.carouselHeaderRenderer.contents[1].topicChannelDetailsRenderer
+      channelName = channelDetails.title
+      channelUrl = channelDetails.navigationEndpoint.browseEndpoint.canonicalBaseUrl
+    }
 
     const channelInfo = {
       channelId: channelId,
@@ -496,14 +525,19 @@ class YoutubeGrabber {
       return false
     })[0]
     let featuredVideo = null
-    let homeItems = homeTab.tabRenderer.content.sectionListRenderer.contents.filter(x => {
-      if ('shelfRenderer' in x.itemSectionRenderer.contents[0]) {
-        return true
-      } else if ('channelVideoPlayerRenderer' in x.itemSectionRenderer.contents[0]) {
-        featuredVideo = ytGrabHelp.parseVideo(x.itemSectionRenderer.contents[0], channelInfo)
-      }
-      return false
-    })
+    let homeItems
+    if (homeTab !== undefined) {
+      homeItems = homeTab.tabRenderer.content.sectionListRenderer.contents.filter(x => {
+        if ('shelfRenderer' in x.itemSectionRenderer.contents[0]) {
+          return true
+        } else if ('channelVideoPlayerRenderer' in x.itemSectionRenderer.contents[0]) {
+          featuredVideo = ytGrabHelp.parseVideo(x.itemSectionRenderer.contents[0], channelInfo)
+        }
+        return false
+      })
+    } else {
+      homeItems = headerTabs[0].tabRenderer.content.richGridRenderer.contents
+    }
     homeItems = homeItems.map(x => {
       const shelf = x.itemSectionRenderer.contents[0].shelfRenderer
       const title = shelf.title.runs[0]
@@ -521,9 +555,15 @@ class YoutubeGrabber {
         })
       } else if (shelfUrl.match(/\?list=/)) {
         type = 'playlist' // similar to videos but links to a playlist url
-        items = shelf.content.horizontalListRenderer.items.map(video => {
-          return ytGrabHelp.parseVideo(video, channelInfo)
-        })
+        if ('horizontalListRenderer' in shelf.content) {
+          items = shelf.content.horizontalListRenderer.items.map(video => {
+            return ytGrabHelp.parseVideo(video, channelInfo)
+          })
+        } else {
+          items = shelf.content.expandedShelfContentsRenderer.items.map(video => {
+            return ytGrabHelp.parseVideo(video, channelInfo)
+          })
+        }
       } else if (shelfUrl.match(/\/channels/)) {
         type = 'channels'
         items = shelf.content.horizontalListRenderer.items.map(channel => {
@@ -559,6 +599,7 @@ class YoutubeGrabber {
       items: homeItems
     }
   }
+
   static GetContinuationUrlParams(continuation) {
     return {
       context: {
