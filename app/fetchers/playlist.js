@@ -1,11 +1,6 @@
 const helper = require('../helper')
 
 class PlaylistFetcher {
-  constructor(url) {
-    const _url = url
-    this.getOriginalURL = () => _url
-  }
-
   static async getChannelPlaylistLast (channelId, channelIdType, httpAgent = null) {
     const ytGrabHelp = helper.create(httpAgent)
     const channelPageResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'playlists?flow=grid&sort=lad&view=1&pbj=1', channelIdType)

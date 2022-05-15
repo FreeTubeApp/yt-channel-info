@@ -1,10 +1,6 @@
 const helper = require('../helper')
 
 class YoutubeChannelFetcher {
-  constructor(id, continuation) {
-    this.continuation = continuation
-  }
-
   static async getChannelVideosNewest (channelId, channelIdType, httpAgent = null) {
     const ytGrabHelp = helper.create(httpAgent)
     const channelPageResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'videos?flow=grid&view=0&pbj=1', channelIdType)
