@@ -339,7 +339,7 @@ class YoutubeGrabberHelper {
             content: {
               videoId: videoRenderer.videoId,
               title: videoRenderer.title.runs[0].text,
-              description: videoRenderer.descriptionSnippet.runs[0].text,
+              description: '',
               publishedText: videoRenderer.publishedTimeText.simpleText,
               lengthText: videoRenderer.lengthText.simpleText,
               viewCountText: videoRenderer.viewCountText.simpleText,
@@ -347,6 +347,9 @@ class YoutubeGrabberHelper {
               author: videoRenderer.ownerText.runs[0].text,
               thumbnails: videoRenderer.thumbnail.thumbnails
             }
+          }
+          if ('descriptionSnippet' in videoRenderer) {
+            postData.postContent.content.description = videoRenderer.descriptionSnippet.runs[0].text
           }
           if ('ownerBadges' in videoRenderer) {
             videoRenderer.ownerBadges.forEach((badge) => {
