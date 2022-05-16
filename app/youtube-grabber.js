@@ -28,11 +28,13 @@ class YoutubeGrabber {
     if (typeof headerLinks !== 'undefined') {
       const channelHeaderLinksData = headerLinks.channelHeaderLinksRenderer
       links.primaryLinks = channelHeaderLinksData.primaryLinks.map(x => {
+        const url = x.navigationEndpoint.urlEndpoint.url
+        const match = url.match('&q=(.*)')
         return {
-          url: decodeURIComponent(x.navigationEndpoint.urlEndpoint.url.match('&q=(.*)')[1]),
+          url: match === null ? url : decodeURIComponent(match[1]),
           icon: x.icon.thumbnails[0].url,
           title: x.title.simpleText
-        }
+        } 
       })
       if (typeof channelHeaderLinksData.secondaryLinks !== 'undefined') {
         links.secondaryLinks = channelHeaderLinksData.secondaryLinks.map(x => {
