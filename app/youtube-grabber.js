@@ -34,7 +34,7 @@ class YoutubeGrabber {
           url: match === null ? url : decodeURIComponent(match[1]),
           icon: x.icon.thumbnails[0].url,
           title: x.title.simpleText
-        } 
+        }
       })
       if (typeof channelHeaderLinksData.secondaryLinks !== 'undefined') {
         links.secondaryLinks = channelHeaderLinksData.secondaryLinks.map(x => {
