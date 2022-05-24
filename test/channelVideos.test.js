@@ -32,6 +32,13 @@ describe('Getting channel videos', () => {
     })
   })
 
+  test('Shorts Channel', () => {
+    const parameters = { channelId: 'UC4-79UOlP48-QNGgCko5p2g', channelIdType: 1 }
+    return ytch.getChannelVideos(parameters).then((data) => {
+      expect(data.items[0].lengthSeconds).not.toBe(0)
+    })
+  })
+
   test('Public channel w/o videos', () => {
     const parameters = { channelId: 'UCS-DgEvT4XuQsrrmI7iZVsA', channelIdType: 1 }
     return ytch.getChannelVideos(parameters).then((data) => {
