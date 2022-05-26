@@ -240,8 +240,8 @@ class YoutubeGrabberHelper {
         } else if (durationSplit[0] === 'SHORTS') { // durationText will still be 'SHORTS' for shorts
           const regexMatch = video.title.accessibility.accessibilityData.label.match(shortsRegex)
           lengthSeconds = parseInt(regexMatch[2])
-          durationText = '0:' + (lengthSeconds.toString().padStart(2,'0'))
-          if (regexMatch[3] == 'minute') {
+          durationText = '0:' + (lengthSeconds.toString().padStart(2, '0'))
+          if (regexMatch[3] === 'minute') {
             lengthSeconds *= 60
             durationText = '1:00'
           }
