@@ -3,6 +3,10 @@
   "version": "3.0.4",
   "description": "Grab YouTube channel information without any official API",
   "main": "index.js",
+  "files": [
+    "index.js",
+    "app/"
+  ],
   "scripts": {
     "test": "jest --watchAll --verbose --coverage",
     "test-ci": "jest --verbose --ci  --coverage",
