@@ -165,7 +165,7 @@ class YoutubeGrabberHelper {
   }
 
   parseVideo(obj, channelInfo) {
-    const shortsRegex = /(months?|years?|days?|hours?|weeks?) ago (\d*) (second|minute)/
+    const shortsRegex = /(months?|years?|weeks?|days?|hours?|minutes?|seconds?) ago (\d*) (second|minute)/
     let video
     let liveNow = false
     let premiere = false
