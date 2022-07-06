@@ -165,7 +165,6 @@ class YoutubeGrabberHelper {
   }
 
   parseVideo(obj, channelInfo) {
-    const shortsRegex = /(months?|years?|weeks?|days?|hours?|minutes?|seconds?) ago (\d*) (second|minute)/
     let video
     let liveNow = false
     let premiere = false
@@ -238,12 +237,17 @@ class YoutubeGrabberHelper {
 
           lengthSeconds = (minutes * 60) + seconds
         } else if (durationSplit[0] === 'SHORTS') { // durationText will still be 'SHORTS' for shorts
-          const regexMatch = video.title.accessibility.accessibilityData.label.match(shortsRegex)
-          lengthSeconds = parseInt(regexMatch[2])
-          durationText = '0:' + (lengthSeconds.toString().padStart(2, '0'))
-          if (regexMatch[3] === 'minute') {
+          const accessibilityData = video.title.accessibility.accessibilityData.label
+          const numbersAndSpacesRegex = /[^0-9\s]/g
+          const numbersOnly = accessibilityData.replace(numbersAndSpacesRegex, '').trim().split(' ').filter(number => {
+            return number !== ''
+          })
+          lengthSeconds = parseInt(numbersOnly[numbersOnly.length - 2])
+          if (lengthSeconds === 1) { // assume it's a minute and not a second
             lengthSeconds *= 60
             durationText = '1:00'
+          } else {
+            durationText = '0:' + (lengthSeconds.toString().padStart(2, '0'))
           }
         }
       } else {
