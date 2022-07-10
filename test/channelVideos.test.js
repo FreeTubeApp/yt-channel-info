@@ -45,4 +45,11 @@ describe('Getting channel videos', () => {
       expect(data.items.length).toBe(0)
     })
   })
+
+  test('Upcoming video', () => {
+    const parameters = { channelId: 'UCUKPG1-r4WFyxpyhIuCs86Q', channelIdType: 1 }
+    return ytch.getChannelVideos(parameters).then((data) => {
+      expect(data.items.length).toBeGreaterThan(0)
+    })
+  })
 })
