@@ -12,9 +12,6 @@ class YoutubeGrabberHelper {
       },
       httpsAgent: httpsAgent
     })
-
-    this.cookies = null
-    this.test = 'hello'
   }
 
   /**
@@ -58,15 +55,19 @@ class YoutubeGrabberHelper {
   }
 
   async parseChannelVideoResponse(response, channelId, channelIdType) {
-    if (typeof (response.data[1].response.alerts) !== 'undefined') {
+    let channelPageDataResponse = response.data.response
+    if (typeof (channelPageDataResponse) === 'undefined') {
+      channelPageDataResponse = response.data[1].response
+    }
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
       return {
-        alertMessage: response.data[1].response.alerts[0].alertRenderer.text.simpleText
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
       }
     }
 
-    const channelMetaData = response.data[1].response.metadata.channelMetadataRenderer
+    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
-    const channelVideoData = response.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    const channelVideoData = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
 
     if (typeof (channelVideoData) === 'undefined') {
       // Channel has no videos
@@ -114,7 +115,10 @@ class YoutubeGrabberHelper {
     const channelId = author.channelId
     const channelUrl = author.navigationEndpoint.browseEndpoint.canonicalBaseUrl
     const thumbnail = author.thumbnail.thumbnails
-    const videoCount = author.videoCountText.runs[0].text
+    let videoCount = 0
+    if ('videoCout' in author) {
+      videoCount = author.videoCountText.runs[0].text
+    }
     let subscriberText
     if (author.subscriberCountText) {
       if (typeof (author.subscriberCountText.runs) !== 'undefined') {
@@ -135,25 +139,18 @@ class YoutubeGrabberHelper {
       subscriberNumber = parseFloat(subscriberSplit[0])
     }
 
-    let subscriberCount
+    let subscriberCount = subscriberNumber
     let verified = false
     let officialArtist = false
     if ('ownerBadges' in author) {
       verified = author.ownerBadges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED')
       officialArtist = author.ownerBadges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED_ARTIST')
     }
-
-    switch (subscriberMultiplier) {
-      case 'k':
-        subscriberCount = subscriberNumber * 1000
-        break
-      case 'm':
-        subscriberCount = subscriberNumber * 1000000
-        break
-      default:
-        subscriberCount = subscriberNumber
+    if (subscriberMultiplier === 'k') {
+      subscriberCount *= 1000
+    } else if (subscriberMultiplier === 'm') {
+      subscriberCount *= 1000000
     }
-
     return {
       channelName: channelName,
       channelId: channelId,
@@ -168,6 +165,7 @@ class YoutubeGrabberHelper {
   }
 
   parseVideo(obj, channelInfo) {
+    const shortsRegex = /(months?|years?|days?|hours?|weeks?) ago (\d*) (second|minute)/
     let video
     let liveNow = false
     let premiere = false
@@ -239,6 +237,14 @@ class YoutubeGrabberHelper {
           const seconds = parseInt(durationSplit[1])
 
           lengthSeconds = (minutes * 60) + seconds
+        } else if (durationSplit[0] === 'SHORTS') { // durationText will still be 'SHORTS' for shorts
+          const regexMatch = video.title.accessibility.accessibilityData.label.match(shortsRegex)
+          lengthSeconds = parseInt(regexMatch[2])
+          durationText = '0:' + (lengthSeconds.toString().padStart(2, '0'))
+          if (regexMatch[3] === 'minute') {
+            lengthSeconds *= 60
+            durationText = '1:00'
+          }
         }
       } else {
         lengthSeconds = 0
@@ -342,7 +348,7 @@ class YoutubeGrabberHelper {
             content: {
               videoId: videoRenderer.videoId,
               title: videoRenderer.title.runs[0].text,
-              description: videoRenderer.descriptionSnippet.runs[0].text,
+              description: '',
               publishedText: videoRenderer.publishedTimeText.simpleText,
               lengthText: videoRenderer.lengthText.simpleText,
               viewCountText: videoRenderer.viewCountText.simpleText,
@@ -350,6 +356,9 @@ class YoutubeGrabberHelper {
               author: videoRenderer.ownerText.runs[0].text,
               thumbnails: videoRenderer.thumbnail.thumbnails
             }
+          }
+          if ('descriptionSnippet' in videoRenderer) {
+            postData.postContent.content.description = videoRenderer.descriptionSnippet.runs[0].text
           }
           if ('ownerBadges' in videoRenderer) {
             videoRenderer.ownerBadges.forEach((badge) => {
@@ -381,6 +390,13 @@ class YoutubeGrabberHelper {
             })
           }
           )
+        } else if ('postMultiImageRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
+          postData.postContent = {
+            type: 'multiImage',
+            content: post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.postMultiImageRenderer.images.map(im => {
+              return im.backstageImageRenderer.image.thumbnails
+            })
+          }
         } else {
           console.error('New type of post detected. Please report this to the repository with the log and channel that was scraped')
           console.log(post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.keys())
@@ -480,20 +496,6 @@ class YoutubeGrabberHelper {
       playlistUrl: `https://www.youtube.com/playlist?list=${playlist.playlistId}`,
       videoCount: videoCount
     }
-  }
-
-  /**
-     * Get the existing status of resource
-     * @param { string } url The url of youtube resource
-     * @returns { Promise<boolean> } Return TRUE if resource is exists
-     * */
-  async isResourceExists(url) {
-    const response = await YoutubeGrabberHelper.getResource(url)
-    if (!response) return false
-
-    const $ = cheerio.load(response.data)
-    const metaTags = $('meta[name="title"]')
-    return metaTags.length !== 0
   }
 
   async decideUrlRequestType(channelId, urlAppendix, channelIdType) {
