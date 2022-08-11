@@ -237,11 +237,14 @@ class YoutubeGrabberHelper {
 
           lengthSeconds = (minutes * 60) + seconds
         } else if (durationSplit[0] === 'SHORTS') { // durationText will still be 'SHORTS' for shorts
+          // format: {Video Title} {x} weeks ago {y} seconds {z} views - play Short
+          // (text is different depending on location, ex: german ip = german text)
           const accessibilityData = video.title.accessibility.accessibilityData.label
           const numbersAndSpacesRegex = /[^0-9\s]/g
           const numbersOnly = accessibilityData.replace(numbersAndSpacesRegex, '').trim().split(' ').filter(number => {
             return number !== ''
           })
+          // only care about seconds/minute, skip over view count
           lengthSeconds = parseInt(numbersOnly[numbersOnly.length - 2])
           if (lengthSeconds === 1) { // assume it's a minute and not a second
             lengthSeconds *= 60
