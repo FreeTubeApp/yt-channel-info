@@ -33,7 +33,7 @@ describe('Getting channel info', () => {
   // })
 
   test('Public channel with private subscriber count.', () => {
-    const parameters = { channelId: 'UCemb7r7IyrvY-AFPqsDjs7w', channelIdType: 0 }
+    const parameters = { channelId: 'RickAstleyVEVO', channelIdType: 2 }
     return ytch.getChannelInfo(parameters).then((data) => {
       expect(data.subscriberCount).toBe(0)
     })
