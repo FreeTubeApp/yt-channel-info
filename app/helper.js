@@ -551,7 +551,7 @@ class YoutubeGrabberHelper {
             return this.parsePlaylist(pl, channelInfo)
           })
         }
-      } else if (new RegExp(/\?list=/).test(shelfUrl)) {
+      } else if (/\?list=/.test(shelfUrl)) {
         type = 'playlist' // similar to videos but links to a playlist url
         if ('horizontalListRenderer' in shelf.content) {
           items = shelf.content.horizontalListRenderer.items.map(video => {
@@ -562,17 +562,17 @@ class YoutubeGrabberHelper {
             return this.parseVideo(video, channelInfo)
           })
         }
-      } else if (new RegExp(/\/channels/).test(shelfUrl)) {
+      } else if (/\/channels/.test(shelfUrl)) {
         type = 'channels'
         items = shelf.content.horizontalListRenderer.items.map(channel => {
           return this.parseFeaturedChannel(channel.gridChannelRenderer)
         })
-      } else if (new RegExp(/\/videos/).test(shelfUrl)) {
+      } else if (/\/videos/.test(shelfUrl)) {
         type = 'videos'
         items = shelf.content.horizontalListRenderer.items.map(video => {
           return this.parseVideo(video, channelInfo)
         })
-      } else if (new RegExp(/\/playlists/).test(shelfUrl)) {
+      } else if (/\/playlists/.test(shelfUrl)) {
         if (shelf.content.horizontalListRenderer.items[0].compactStationRenderer != null) {
           type = 'mix'
           items = shelf.content.horizontalListRenderer.items.map(mix => {
