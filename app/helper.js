@@ -207,7 +207,7 @@ class YoutubeGrabberHelper {
     } else if (typeof (video.viewCountText) === 'undefined') {
       premium = true
       if (typeof (video.publishedTimeText) === 'undefined') {
-        var regex = new RegExp('^.*' + channelInfo.channelName + ' (.*?) ago.*', 'g')
+        const regex = new RegExp('^.*' + channelInfo.channelName + ' (.*?) ago.*', 'g')
         publishedText = video.title.accessibility.accessibilityData.label.replace(regex, '$1')
       } else {
         publishedText = video.publishedTimeText.simpleText

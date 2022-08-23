@@ -51,6 +51,7 @@ class PlaylistFetcher {
       if (item !== null) {
         return item
       }
+      return undefined
     })
 
     let continuation = null
