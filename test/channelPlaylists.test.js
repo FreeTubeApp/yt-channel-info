@@ -1,5 +1,4 @@
 const ytch = require('../index')
-/* eslint no-undef: "off" */
 describe('Playlists', () => {
   test('Channel with playlists', () => {
     const parameters = { channelId: 'UCMO51vS4kaOSLqBD9bmZGIg', channelIdType: 1 }

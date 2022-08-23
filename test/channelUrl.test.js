@@ -1,5 +1,4 @@
 const ytch = require('../index')
-/* eslint no-undef: "off" */
 describe('Standalone Mode: Channel URL Testing', () => {
   test('Channel URL (ID-based)', () => {
     // https://www.youtube.com/channel/UCfMJ2MchTSW2kWaT0kK94Yw

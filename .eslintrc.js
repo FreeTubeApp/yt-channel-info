@@ -6,6 +6,7 @@ module.exports = {
   env: {
     browser: true,
     node: true,
+    jest: true
   },
 
   // https://vuejs.github.io/eslint-plugin-vue/user-guide/#faq
