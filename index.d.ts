@@ -1,4 +1,4 @@
-import HttpsProxyAgent from 'https-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 declare module "yt-channel-info" {
 
@@ -171,7 +171,7 @@ declare module "yt-channel-info" {
             ownerBadges: {
                 verified: boolean;
                 officialArtist: boolean;
-            }, 
+            },
             author: string;
             thumbnails: Image[];
         }
@@ -186,7 +186,7 @@ declare module "yt-channel-info" {
             ownerBadges: {
                 verified: boolean;
                 officialArtist: boolean;
-            }, 
+            },
             author: String,
             thumbnails: Image[];
         }
@@ -240,15 +240,15 @@ declare module "yt-channel-info" {
         static searchChannelMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<Video>>;
 
         static getRelatedChannelsMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<RelatedChannel>>;
-    
+
         static getChannelCommunityPosts(payload: ChannelInfoPayload): Promise<ChannelCommunityPostsResponse>
-        
+
         static getChannelCommunityPostsMore(payload: CommunityPostContinuationPayload): Promise<ChannelCommunityPostsContinuationResponse>
-        
+
         static getChannelStats(payload: ChannelInfoPayload): Promise<ChannelStatsResponse>
-        
+
         static getChannelHome(payload: ChannelInfoPayload): Promise<ChannelHomeResponse>
     }
-    
+
     export = YoutubeGrabber;
 }
