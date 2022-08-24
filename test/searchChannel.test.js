@@ -1,6 +1,4 @@
-const { expect } = require('@jest/globals')
 const ytch = require('../index')
-/* eslint no-undef: 'off' */
 describe('Searching channels', () => {
   test('Search channel', () => {
     const parameters = { channelId: 'UCsBjURrPoezykLs9EqgamOA', channelIdType: 1, query: 'Java' }

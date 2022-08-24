@@ -344,9 +344,7 @@ class YoutubeGrabber {
     }
 
     const searchTab = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs.findIndex((tab) => {
-      if (typeof (tab.expandableTabRenderer) !== 'undefined') {
-        return true
-      }
+      return (typeof (tab.expandableTabRenderer) !== 'undefined')
     })
 
     const searchResults = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[searchTab].expandableTabRenderer.content.sectionListRenderer

@@ -11,8 +11,8 @@
   "scripts": {
     "test": "jest --watchAll --verbose --coverage",
     "test-ci": "jest --verbose --ci  --coverage",
-    "lint-fix": "eslint --fix --ext .js,.ts ./",
-    "lint": "eslint --ext .js,.ts ./"
+    "lint-fix": "eslint --fix --ext .js ./",
+    "lint": "eslint --ext .js ./"
   },
   "keywords": [
     "youtube",

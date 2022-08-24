@@ -6,6 +6,7 @@ module.exports = {
   env: {
     browser: true,
     node: true,
+    jest: true
   },
 
   // https://vuejs.github.io/eslint-plugin-vue/user-guide/#faq
@@ -28,10 +29,11 @@ module.exports = {
   ],
 
   rules: {
-    'space-before-function-paren': 0,
-    'comma-dangle': 0,
-    'no-console': 0,
-    'no-unused-vars': 1,
-    'no-undef': 1
+    'space-before-function-paren': 'off',
+    'comma-dangle': 'off',
+    'no-console': 'off',
+    'no-unused-vars': 'warn',
+    'no-undef': 'warn',
+    'object-shorthand': 'off'
   },
 }
