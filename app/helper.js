@@ -320,12 +320,14 @@ class YoutubeGrabberHelper {
         postText: '',
         postId: post.backstagePostThreadRenderer.post.backstagePostRenderer.postId,
         author: post.backstagePostThreadRenderer.post.backstagePostRenderer.authorText.runs[0].text,
+        authorId: this.extractChannelId(post.backstagePostThreadRenderer.post.backstagePostRenderer.authorEndpoint),
         authorThumbnails: post.backstagePostThreadRenderer.post.backstagePostRenderer.authorThumbnail.thumbnails,
         publishedText: post.backstagePostThreadRenderer.post.backstagePostRenderer.publishedTimeText.runs[0].text,
         voteCount: post.backstagePostThreadRenderer.post.backstagePostRenderer.voteCount.simpleText,
         postContent: null,
         commentCount: ('text' in post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer) ? post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer.text.simpleText : '0'
       }
+
       if ('runs' in post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText) {
         // eslint-disable-next-line no-return-assign
         post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs.forEach((element, index) => {
@@ -350,6 +352,7 @@ class YoutubeGrabberHelper {
         } else if ('videoRenderer' in post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment) {
           // post with a video
           const videoRenderer = post.backstagePostThreadRenderer.post.backstagePostRenderer.backstageAttachment.videoRenderer
+
           postData.postContent = {
             type: 'video',
             content: {
@@ -361,6 +364,7 @@ class YoutubeGrabberHelper {
               viewCountText: videoRenderer.viewCountText.simpleText,
               badges: { verified: false, officialArtist: false },
               author: videoRenderer.ownerText.runs[0].text,
+              authorId: this.extractChannelId(videoRenderer.ownerText.runs[0].navigationEndpoint),
               thumbnails: videoRenderer.thumbnail.thumbnails
             }
           }
@@ -385,6 +389,7 @@ class YoutubeGrabberHelper {
               videoCountText: playlistRenderer.videoCountText.runs[0],
               ownerBadges: playlistRenderer.ownerBadges,
               author: playlistRenderer.longBylineText.runs[0].text,
+              authorId: this.extractChannelId(playlistRenderer.longBylineText.runs[0].navigationEndpoint), // this might fail, no channel with a playlist posted was found
               thumbnails: playlistRenderer.thumbnails
             }
           }
@@ -412,6 +417,11 @@ class YoutubeGrabberHelper {
       postsArray.push(postData)
     })
     return postsArray
+  }
+
+  extractChannelId(browseEndPoint) {
+    const channelLinkSplit = browseEndPoint.commandMetadata.webCommandMetadata.url.split('/')
+    return channelLinkSplit[channelLinkSplit.length - 1]
   }
 
   extractLinks(text) {
