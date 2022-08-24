@@ -165,7 +165,6 @@ class YoutubeGrabberHelper {
   }
 
   parseVideo(obj, channelInfo) {
-    const shortsRegex = /(months?|years?|days?|hours?|weeks?) ago (\d*) (second|minute)/
     let video
     let liveNow = false
     let premiere = false
@@ -238,12 +237,20 @@ class YoutubeGrabberHelper {
 
           lengthSeconds = (minutes * 60) + seconds
         } else if (durationSplit[0] === 'SHORTS') { // durationText will still be 'SHORTS' for shorts
-          const regexMatch = video.title.accessibility.accessibilityData.label.match(shortsRegex)
-          lengthSeconds = parseInt(regexMatch[2])
-          durationText = '0:' + (lengthSeconds.toString().padStart(2, '0'))
-          if (regexMatch[3] === 'minute') {
+          // format: {Video Title} {x} weeks ago {y} seconds {z} views - play Short
+          // (text is different depending on location, ex: german ip = german text)
+          const accessibilityData = video.title.accessibility.accessibilityData.label
+          const numbersAndSpacesRegex = /[^0-9\s]/g
+          const numbersOnly = accessibilityData.replace(numbersAndSpacesRegex, '').trim().split(' ').filter(number => {
+            return number !== ''
+          })
+          // only care about seconds/minute, skip over view count
+          lengthSeconds = parseInt(numbersOnly[numbersOnly.length - 2])
+          if (lengthSeconds === 1) { // assume it's a minute and not a second
             lengthSeconds *= 60
             durationText = '1:00'
+          } else {
+            durationText = '0:' + (lengthSeconds.toString().padStart(2, '0'))
           }
         }
       } else {
@@ -491,7 +498,11 @@ class YoutubeGrabberHelper {
       }
 
       thumbnails = playlist.thumbnail.thumbnails
-      title = playlist.title.runs[0].text
+      if ('simpleText' in playlist.title) {
+        title = playlist.title.simpleText
+      } else {
+        title = playlist.title.runs[0].text
+      }
       videoCount = parseInt(playlist.videoCountShortText.simpleText)
     }
 
@@ -505,6 +516,91 @@ class YoutubeGrabberHelper {
       playlistId: playlist.playlistId,
       playlistUrl: `https://www.youtube.com/playlist?list=${playlist.playlistId}`,
       videoCount: videoCount
+    }
+  }
+
+  parseHomeItem(item, channelInfo) {
+    let shelfName = ''
+    let shelfUrl = null
+    let items = []
+    let type = 'video'
+    if ('richSectionRenderer' in item) {
+      const shelf = item.richSectionRenderer.content.richShelfRenderer
+      shelfName = shelf.title.simpleText
+      type = 'verticalVideoList'
+      items = shelf.contents.map(shelfContent => {
+        return this.parseVideo(shelfContent.richItemRenderer.content, channelInfo)
+      })
+    } else if ('richItemRenderer' in item) {
+      items = [this.parseVideo(item.richItemRenderer.content, channelInfo)]
+    } else if ('itemSectionRenderer' in item) {
+      const shelf = item.itemSectionRenderer.contents[0].shelfRenderer
+
+      if ('runs' in shelf.title) {
+        const title = shelf.title.runs[0]
+        if ('navigationEndpoint' in title) {
+          shelfUrl = title.navigationEndpoint.commandMetadata.webCommandMetadata.url
+        }
+        shelfName = title.text
+      } else {
+        shelfName = shelf.title.simpleText
+        shelfUrl = shelf.endpoint.commandMetadata.webCommandMetadata.url
+      }
+      if (shelfUrl === null) {
+        let shelfRenderer
+        if ('expandedShelfContentsRenderer' in shelf.content) {
+          type = 'verticalVideoList'
+          shelfRenderer = shelf.content.expandedShelfContentsRenderer
+          items = shelfRenderer.items.map(video => {
+            return this.parseVideo(video, channelInfo)
+          })
+        } else {
+          type = 'playlist'
+          shelfRenderer = shelf.content.horizontalListRenderer
+          items = shelfRenderer.items.map(pl => {
+            return this.parsePlaylist(pl, channelInfo)
+          })
+        }
+      } else if (/\?list=/.test(shelfUrl)) {
+        type = 'playlist' // similar to videos but links to a playlist url
+        if ('horizontalListRenderer' in shelf.content) {
+          items = shelf.content.horizontalListRenderer.items.map(video => {
+            return this.parseVideo(video, channelInfo)
+          })
+        } else {
+          items = shelf.content.expandedShelfContentsRenderer.items.map(video => {
+            return this.parseVideo(video, channelInfo)
+          })
+        }
+      } else if (/\/channels/.test(shelfUrl)) {
+        type = 'channels'
+        items = shelf.content.horizontalListRenderer.items.map(channel => {
+          return this.parseFeaturedChannel(channel.gridChannelRenderer)
+        })
+      } else if (/\/videos/.test(shelfUrl)) {
+        type = 'videos'
+        items = shelf.content.horizontalListRenderer.items.map(video => {
+          return this.parseVideo(video, channelInfo)
+        })
+      } else if (/\/playlists/.test(shelfUrl)) {
+        if (shelf.content.horizontalListRenderer.items[0].compactStationRenderer != null) {
+          type = 'mix'
+          items = shelf.content.horizontalListRenderer.items.map(mix => {
+            return this.parseMix(mix, channelInfo)
+          })
+        } else {
+          type = 'playlists'
+          items = shelf.content.horizontalListRenderer.items.map(playlist => {
+            return this.parsePlaylist(playlist, channelInfo)
+          })
+        }
+      }
+    }
+    return {
+      shelfName: shelfName,
+      type: type,
+      shelfUrl: shelfUrl,
+      items: items
     }
   }
 

@@ -527,7 +527,7 @@ class YoutubeGrabber {
       return false
     })[0]
     let featuredVideo = null
-    let homeItems
+    let homeItems = []
     if (homeTab !== undefined) {
       homeItems = homeTab.tabRenderer.content.sectionListRenderer.contents.filter(x => {
         if ('shelfRenderer' in x.itemSectionRenderer.contents[0]) {
@@ -538,63 +538,14 @@ class YoutubeGrabber {
         return false
       })
     } else {
-      homeItems = headerTabs[0].tabRenderer.content.richGridRenderer.contents
+      if ('richGridRenderer' in headerTabs[0].tabRenderer.content) {
+        homeItems = headerTabs[0].tabRenderer.content.richGridRenderer.contents
+      } else if ('sectionListRenderer' in headerTabs[0].tabRenderer.content) {
+        homeItems = headerTabs[0].tabRenderer.content.sectionListRenderer.contents
+      }
     }
-    homeItems = homeItems.map(x => {
-      const shelf = x.itemSectionRenderer.contents[0].shelfRenderer
-      const title = shelf.title.runs[0]
-      let shelfUrl = null
-      if ('navigationEndpoint' in title) {
-        shelfUrl = title.navigationEndpoint.commandMetadata.webCommandMetadata.url
-      }
-      const shelfName = title.text
-      let items = []
-      let type = 'video'
-      if (shelfUrl === null) {
-        type = 'verticalVideoList'
-        items = shelf.content.expandedShelfContentsRenderer.items.map(video => {
-          return ytGrabHelp.parseVideo(video, channelInfo)
-        })
-      } else if (shelfUrl.match(/\?list=/)) {
-        type = 'playlist' // similar to videos but links to a playlist url
-        if ('horizontalListRenderer' in shelf.content) {
-          items = shelf.content.horizontalListRenderer.items.map(video => {
-            return ytGrabHelp.parseVideo(video, channelInfo)
-          })
-        } else {
-          items = shelf.content.expandedShelfContentsRenderer.items.map(video => {
-            return ytGrabHelp.parseVideo(video, channelInfo)
-          })
-        }
-      } else if (shelfUrl.match(/\/channels/)) {
-        type = 'channels'
-        items = shelf.content.horizontalListRenderer.items.map(channel => {
-          return ytGrabHelp.parseFeaturedChannel(channel.gridChannelRenderer)
-        })
-      } else if (shelfUrl.match(/\/videos/)) {
-        type = 'videos'
-        items = shelf.content.horizontalListRenderer.items.map(video => {
-          return ytGrabHelp.parseVideo(video, channelInfo)
-        })
-      } else if (shelfUrl.match(/\/playlists/)) {
-        if (shelf.content.horizontalListRenderer.items[0].compactStationRenderer != null) {
-          type = 'mix'
-          items = shelf.content.horizontalListRenderer.items.map(mix => {
-            return ytGrabHelp.parseMix(mix, channelInfo)
-          })
-        } else {
-          type = 'playlists'
-          items = shelf.content.horizontalListRenderer.items.map(playlist => {
-            return ytGrabHelp.parsePlaylist(playlist, channelInfo)
-          })
-        }
-      }
-      return {
-        shelfName: shelfName,
-        type: type,
-        shelfUrl: shelfUrl,
-        items: items
-      }
+    homeItems = homeItems.map(item => {
+      return ytGrabHelp.parseHomeItem(item, channelInfo)
     })
     return {
       featuredVideo: featuredVideo,
