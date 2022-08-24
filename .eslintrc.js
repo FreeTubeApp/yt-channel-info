@@ -29,11 +29,11 @@ module.exports = {
   ],
 
   rules: {
-    'space-before-function-paren': 0,
-    'comma-dangle': 0,
-    'no-console': 0,
-    'no-unused-vars': 1,
-    'no-undef': 1,
-    'object-shorthand': 0
+    'space-before-function-paren': 'off',
+    'comma-dangle': 'off',
+    'no-console': 'off',
+    'no-unused-vars': 'warn',
+    'no-undef': 'warn',
+    'object-shorthand': 'off'
   },
 }
