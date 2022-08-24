@@ -321,8 +321,6 @@ class YoutubeGrabberHelper {
         commentCount: ('text' in post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer) ? post.backstagePostThreadRenderer.post.backstagePostRenderer.actionButtons.commentActionButtonsRenderer.replyButton.buttonRenderer.text.simpleText : '0'
       }
 
-      
-
       if ('runs' in post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText) {
         // eslint-disable-next-line no-return-assign
         post.backstagePostThreadRenderer.post.backstagePostRenderer.contentText.runs.forEach((element, index) => {
