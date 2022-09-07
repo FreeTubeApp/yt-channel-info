@@ -20,7 +20,10 @@ class YoutubeGrabber {
     if (channelPageResponse.data.response === undefined) {
       channelPageDataResponse = channelPageResponse.data[1].response
     }
-    const headerLinks = channelPageDataResponse.header.c4TabbedHeaderRenderer.headerLinks
+    let headerLinks
+    if ('c4TabbedHeaderRenderer' in channelPageDataResponse.header) {
+      headerLinks = channelPageDataResponse.header.c4TabbedHeaderRenderer.headerLinks
+    }
     const links = {
       primaryLinks: [],
       secondaryLinks: []
@@ -58,7 +61,11 @@ class YoutubeGrabber {
     const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
     const channelHeaderData = channelPageDataResponse.header.c4TabbedHeaderRenderer
     const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
-
+    const channelTabs = headerTabs.filter(tab => {
+      return typeof tab.tabRenderer !== 'undefined'
+    }).map(tab => {
+      return tab.tabRenderer.title
+    })
     const channelsTab = headerTabs.filter((data) => {
       if (typeof data.tabRenderer !== 'undefined') {
         return data.tabRenderer.title === 'Channels'
@@ -66,9 +73,10 @@ class YoutubeGrabber {
 
       return false
     })
-
-    const featuredChannels = channelsTab[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
-
+    let featuredChannels = {}
+    if (channelsTab.length > 0) {
+      featuredChannels = channelsTab[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
+    }
     let relatedChannels = []
     let relatedChannelsContinuation = null
 
@@ -152,6 +160,7 @@ class YoutubeGrabber {
       isOfficialArtist: isOfficialArtist,
       tags: tags,
       channelLinks: links,
+      channelTabs: channelTabs,
       channelIdType: decideResponse.channelIdType,
     }
 
@@ -469,16 +478,19 @@ class YoutubeGrabber {
       }
       return false
     })[0]
-    const contents = aboutTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
-    const joined = Date.parse(contents.channelAboutFullMetadataRenderer.joinedDateText.runs[1].text)
     let views = '0'
     let location = 'unknown'
-    if ('viewCountText' in contents.channelAboutFullMetadataRenderer) {
-      views = contents.channelAboutFullMetadataRenderer.viewCountText.simpleText.replace(/\D/g, '')
-    }
+    let joined = null
+    if (aboutTab !== undefined) {
+      const contents = aboutTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
+      joined = Date.parse(contents.channelAboutFullMetadataRenderer.joinedDateText.runs[1].text)
+      if ('viewCountText' in contents.channelAboutFullMetadataRenderer) {
+        views = contents.channelAboutFullMetadataRenderer.viewCountText.simpleText.replace(/\D/g, '')
+      }
 
-    if ('country' in contents.channelAboutFullMetadataRenderer) {
-      location = contents.channelAboutFullMetadataRenderer.country.simpleText
+      if ('country' in contents.channelAboutFullMetadataRenderer) {
+        location = contents.channelAboutFullMetadataRenderer.country.simpleText
+      }
     }
 
     return {

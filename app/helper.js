@@ -64,11 +64,19 @@ class YoutubeGrabberHelper {
         alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
       }
     }
-
-    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
-    const channelName = channelMetaData.title
-    const channelVideoData = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
-
+    let channelMetaData
+    let channelName
+    if ('metadata' in channelPageDataResponse) {
+      channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
+      channelName = channelMetaData.title
+    }
+    const videoTab = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs.filter(e => {
+      return e.tabRenderer !== undefined && e.tabRenderer.title === 'Videos'
+    })[0]
+    let channelVideoData
+    if (videoTab !== undefined) {
+      channelVideoData = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    }
     if (typeof (channelVideoData) === 'undefined') {
       // Channel has no videos
       return {
@@ -294,9 +302,16 @@ class YoutubeGrabberHelper {
 
     // Parse the JSON data and get the relevent array with data
     let contentDataJSON = JSON.parse(contentDataString)
-    contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
-    if ('continuationItemRenderer' in contentDataJSON.contents[contentDataJSON.contents.length - 1]) {
-      return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey, channelIdType: channelIdType }
+    const communityTab = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs.filter(e => {
+      return e.tabRenderer !== undefined && e.tabRenderer.title === 'Community'
+    })[0]
+    if (communityTab) {
+      contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
+      if ('continuationItemRenderer' in contentDataJSON.contents[contentDataJSON.contents.length - 1]) {
+        return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey, channelIdType: channelIdType }
+      }
+    } else {
+      contentDataJSON = { contents: [] }
     }
     return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: null, innerTubeApi: null, channelIdType: channelIdType }
   }
