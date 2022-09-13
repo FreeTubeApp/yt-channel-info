@@ -343,6 +343,11 @@ class YoutubeGrabber {
     if (typeof channelPageDataResponse === 'undefined') {
       channelPageDataResponse = channelPageResponse.data[1].response
     }
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
+      return {
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
+      }
+    }
     const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
 
@@ -466,12 +471,13 @@ class YoutubeGrabber {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'about?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
-    let headerTabs
-    if (channelPageResponse.data.response) {
-      headerTabs = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs
-    } else {
-      headerTabs = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs
+    const channelPageDataResponse = channelPageResponse.data[1].response
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
+      return {
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
+      }
     }
+    const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
     const aboutTab = headerTabs.filter((data) => {
       if (typeof data.tabRenderer !== 'undefined') {
         return data.tabRenderer.title === 'About'
@@ -511,6 +517,11 @@ class YoutubeGrabber {
     let channelPageDataResponse = channelPageResponse.data.response
     if (typeof channelPageDataResponse === 'undefined') {
       channelPageDataResponse = channelPageResponse.data[1].response
+    }
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
+      return {
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
+      }
     }
     const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
     let channelName

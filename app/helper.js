@@ -302,6 +302,11 @@ class YoutubeGrabberHelper {
 
     // Parse the JSON data and get the relevent array with data
     let contentDataJSON = JSON.parse(contentDataString)
+    if (typeof (contentDataJSON.alerts) !== 'undefined') {
+      return {
+        alertMessage: contentDataJSON.alerts[0].alertRenderer.text.simpleText
+      }
+    }
     const communityTab = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs.filter(e => {
       return e.tabRenderer !== undefined && e.tabRenderer.title === 'Community'
     })[0]

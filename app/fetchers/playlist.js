@@ -24,6 +24,11 @@ class PlaylistFetcher {
     if (typeof (channelPageDataResponse) === 'undefined') {
       channelPageDataResponse = response.data[1].response
     }
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
+      return {
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
+      }
+    }
     let channelName
     let channelMetaData
     let channelId

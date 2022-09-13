@@ -41,7 +41,7 @@ describe('Playlists', () => {
   })
   test('Deleted channel', () => {
     const parameters = { channelId: 'UC59AcfHD5jOGqTxb-zAsahw', channelIdType: 1 }
-    return ytch.getChannelVideos(parameters).then((data) => {
+    return ytch.getChannelPlaylistInfo(parameters).then((data) => {
       expect(data.alertMessage).not.toBe(undefined)
     })
   })
