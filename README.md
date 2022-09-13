@@ -77,6 +77,7 @@ ytch.getChannelInfo(payload).then((response) => {
    isOfficialArtist: Boolean,
    tags: Array[String], // Will return null if none exist
    channelIdType: Number, 
+   channelTabs: Array[String], // The tabs that are displayed on the channel (e.g., Videos, Playlists)
    alertMessage: String, // Will return a response alert message if any (e.g., "This channel does not exist."). Otherwise undefined
    channelLinks: {
       primaryLinks: Array[Object],

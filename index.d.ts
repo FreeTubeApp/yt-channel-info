@@ -99,7 +99,18 @@ declare module "yt-channel-info" {
         isOfficialArtist: boolean;
         tags: string[];
         channelIdType: number;
+        channelTabs: string[];
         alertMessage: string;
+        channelLinks: {
+          primaryLinks: ChannelLink[],
+          secondaryLinks: ChannelLink[]
+        }
+    }
+
+    interface ChannelLink {
+      url: string,
+      icon: string,
+      title: string
     }
 
     /**
