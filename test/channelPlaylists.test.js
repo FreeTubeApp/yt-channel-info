@@ -32,4 +32,17 @@ describe('Playlists', () => {
       expect(data.items.length).toBe(0)
     })
   })
+  test('Channel missing playlist tab', () => {
+    const parameters = { channelId: 'UCYfdidRxbB8Qhf0Nx7ioOYw', channelIdType: 1 }
+    return ytch.getChannelPlaylistInfo(parameters).then((data) => {
+      expect(data.items.length).toBe(0)
+      expect(data.continuation).toBe(null)
+    })
+  })
+  test('Deleted channel', () => {
+    const parameters = { channelId: 'UC59AcfHD5jOGqTxb-zAsahw', channelIdType: 1 }
+    return ytch.getChannelVideos(parameters).then((data) => {
+      expect(data.alertMessage).not.toBe(undefined)
+    })
+  })
 })

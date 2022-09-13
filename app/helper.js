@@ -124,7 +124,7 @@ class YoutubeGrabberHelper {
     const channelUrl = author.navigationEndpoint.browseEndpoint.canonicalBaseUrl
     const thumbnail = author.thumbnail.thumbnails
     let videoCount = 0
-    if ('videoCout' in author) {
+    if ('videoCountText' in author) {
       videoCount = author.videoCountText.runs[0].text
     }
     let subscriberText

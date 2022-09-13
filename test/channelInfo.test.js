@@ -43,4 +43,17 @@ describe('Getting channel info', () => {
       expect(data.alertMessage).toBe('This channel does not exist.')
     })
   })
+
+  test('Channel missing tabs', () => {
+    const parameters = { channelId: 'UCs6GGpd9zvsYghuYe0VDFUQ', channelIdType: 1 }
+    return ytch.getChannelInfo(parameters).then((data) => {
+      expect(data.channelTabs.length).toBe(3)
+    })
+  })
+  test('Deleted channel', () => {
+    const parameters = { channelId: 'UC59AcfHD5jOGqTxb-zAsahw', channelIdType: 1 }
+    return ytch.getChannelVideos(parameters).then((data) => {
+      expect(data.alertMessage).not.toBe(undefined)
+    })
+  })
 })

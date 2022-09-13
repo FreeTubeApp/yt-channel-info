@@ -14,4 +14,10 @@ describe('Community Posts', () => {
       })
     })
   })
+  test('Deleted channel', () => {
+    const parameters = { channelId: 'UC59AcfHD5jOGqTxb-zAsahw', channelIdType: 1 }
+    return ytch.getChannelVideos(parameters).then((data) => {
+      expect(data.alertMessage).not.toBe(undefined)
+    })
+  })
 })

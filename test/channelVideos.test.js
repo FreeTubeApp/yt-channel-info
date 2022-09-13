@@ -52,4 +52,18 @@ describe('Getting channel videos', () => {
       expect(data.items.length).toBeGreaterThan(0)
     })
   })
+
+  test('Channel missing video tab', () => {
+    const parameters = { channelId: 'UCs6GGpd9zvsYghuYe0VDFUQ', channelIdType: 1 }
+    return ytch.getChannelVideos(parameters).then((data) => {
+      expect(data.items.length).toBe(0)
+      expect(data.continuation).toBe(null)
+    })
+  })
+  test('Deleted channel', () => {
+    const parameters = { channelId: 'UC59AcfHD5jOGqTxb-zAsahw', channelIdType: 1 }
+    return ytch.getChannelVideos(parameters).then((data) => {
+      expect(data.alertMessage).not.toBe(undefined)
+    })
+  })
 })

@@ -36,4 +36,16 @@ describe('Getting channel home', () => {
       expect(data.items.length).not.toBe(0)
     })
   })
+  test('Rammstein - topic', () => {
+    const parameters = { channelId: 'UCs6GGpd9zvsYghuYe0VDFUQ', channelIdType: 1 }
+    return ytch.getChannelHome(parameters).then((data) => {
+      expect(data.items.length).not.toBe(0)
+    })
+  })
+  test('Deleted channel', () => {
+    const parameters = { channelId: 'UC59AcfHD5jOGqTxb-zAsahw', channelIdType: 1 }
+    return ytch.getChannelVideos(parameters).then((data) => {
+      expect(data.alertMessage).not.toBe(undefined)
+    })
+  })
 })
