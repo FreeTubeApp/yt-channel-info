@@ -70,9 +70,8 @@ class YoutubeGrabberHelper {
       channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
       channelName = channelMetaData.title
     }
-    const videoTab = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs.filter(e => {
-      return e.tabRenderer !== undefined && e.tabRenderer.title === 'Videos'
-    })[0]
+    const videoTab = YoutubeGrabberHelper.findTab(channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs)
+
     let channelVideoData
     if (videoTab !== undefined) {
       channelVideoData = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
@@ -307,9 +306,8 @@ class YoutubeGrabberHelper {
         alertMessage: contentDataJSON.alerts[0].alertRenderer.text.simpleText
       }
     }
-    const communityTab = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs.filter(e => {
-      return e.tabRenderer !== undefined && e.tabRenderer.title === 'Community'
-    })[0]
+    const communityTab = YoutubeGrabberHelper.findTab(contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs)
+
     if (communityTab) {
       contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
       if ('continuationItemRenderer' in contentDataJSON.contents[contentDataJSON.contents.length - 1]) {
@@ -687,6 +685,12 @@ class YoutubeGrabberHelper {
       return Promise.reject(channelPageResponse.message)
     }
     return { response: channelPageResponse, channelIdType: 3 }
+  }
+
+  static findTab(tab) {
+    return tab.find((data) =>
+      data?.tabRenderer?.selected === true
+    )
   }
 
   static create(httpsAgent) {

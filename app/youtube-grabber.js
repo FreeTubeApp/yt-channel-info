@@ -65,16 +65,10 @@ class YoutubeGrabber {
       .filter(tab => tab.tabRenderer !== undefined && tab.tabRenderer !== null)
       .map(tab => tab.tabRenderer.title)
 
-    const channelsTab = headerTabs.filter((data) => {
-      if (typeof data.tabRenderer !== 'undefined') {
-        return data.tabRenderer.title === 'Channels'
-      }
-
-      return false
-    })
+    const channelsTab = YoutubeGrabberHelper.findTab(headerTabs)
     let featuredChannels = {}
-    if (channelsTab.length > 0) {
-      featuredChannels = channelsTab[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
+    if (channelsTab !== undefined) {
+      featuredChannels = channelsTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
     }
     let relatedChannels = []
     let relatedChannelsContinuation = null
@@ -477,12 +471,8 @@ class YoutubeGrabber {
       }
     }
     const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
-    const aboutTab = headerTabs.filter((data) => {
-      if (typeof data.tabRenderer !== 'undefined') {
-        return data.tabRenderer.title === 'About'
-      }
-      return false
-    })[0]
+    const aboutTab = YoutubeGrabberHelper.findTab(headerTabs)
+
     let views = '0'
     let location = 'unknown'
     let joined = null
@@ -539,13 +529,9 @@ class YoutubeGrabber {
       channelName: channelName,
       channelUrl: channelUrl
     }
-    const homeTab = headerTabs.filter((data) => {
-      if (typeof data.tabRenderer !== 'undefined') {
-        return data.tabRenderer.title === 'Home'
-      }
 
-      return false
-    })[0]
+    const homeTab = YoutubeGrabberHelper.findTab(headerTabs)
+
     let featuredVideo = null
     let homeItems = []
     if (homeTab !== undefined) {

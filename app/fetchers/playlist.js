@@ -1,3 +1,4 @@
+const YoutubeGrabberHelper = require('../helper')
 const helper = require('../helper')
 
 class PlaylistFetcher {
@@ -45,9 +46,8 @@ class PlaylistFetcher {
       channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
     let playlistData
-    const playlistTab = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs.filter(e => {
-      return e.tabRenderer !== undefined && e.tabRenderer.title === 'Playlists'
-    })[0]
+    const playlistTab = YoutubeGrabberHelper.findTab(channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs)
+
     if (playlistTab !== undefined) {
       const tabRenderer = playlistTab.tabRenderer
       playlistData = tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
