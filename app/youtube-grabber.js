@@ -61,11 +61,10 @@ class YoutubeGrabber {
     const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
     const channelHeaderData = channelPageDataResponse.header.c4TabbedHeaderRenderer
     const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
-    const channelTabs = headerTabs.filter(tab => {
-      return typeof tab.tabRenderer !== 'undefined'
-    }).map(tab => {
-      return tab.tabRenderer.title
-    })
+    const channelTabs = headerTabs
+      .filter(tab => tab.tabRenderer !== undefined && tab.tabRenderer !== null)
+      .map(tab => tab.tabRenderer.title)
+
     const channelsTab = headerTabs.filter((data) => {
       if (typeof data.tabRenderer !== 'undefined') {
         return data.tabRenderer.title === 'Channels'
