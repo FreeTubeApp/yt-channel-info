@@ -73,8 +73,8 @@ class YoutubeGrabberHelper {
     const videoTab = YoutubeGrabberHelper.findTab(channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs)
 
     let channelVideoData
-    if (videoTab !== undefined) {
-      channelVideoData = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    if (videoTab && 'sectionListRenderer' in videoTab.tabRenderer.content) {
+      channelVideoData = videoTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
     }
     if (typeof (channelVideoData) === 'undefined') {
       // Channel has no videos

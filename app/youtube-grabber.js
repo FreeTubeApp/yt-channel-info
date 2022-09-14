@@ -58,8 +58,12 @@ class YoutubeGrabber {
       }
     }
 
-    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
-    const channelHeaderData = channelPageDataResponse.header.c4TabbedHeaderRenderer
+    const channelMetaData = channelPageDataResponse?.metadata?.channelMetadataRenderer
+    let channelHeaderData = channelPageDataResponse.header.c4TabbedHeaderRenderer
+    if (!channelHeaderData) {
+      channelHeaderData = channelPageDataResponse.header.carouselHeaderRenderer.contents[1].topicChannelDetailsRenderer
+      //  = topicChannelDetailsRenderer
+    }
     const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
     const channelTabs = headerTabs
       .filter(tab => tab.tabRenderer !== undefined && tab.tabRenderer !== null)
@@ -67,7 +71,7 @@ class YoutubeGrabber {
 
     const channelsTab = YoutubeGrabberHelper.findTab(headerTabs)
     let featuredChannels = {}
-    if (channelsTab !== undefined) {
+    if (channelsTab && 'sectionListRenderer' in channelsTab.tabRenderer.content) {
       featuredChannels = channelsTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
     }
     let relatedChannels = []
@@ -132,23 +136,22 @@ class YoutubeGrabber {
       isOfficialArtist = channelHeaderData.badges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED_ARTIST')
     }
 
-    const tags = channelPageDataResponse.microformat.microformatDataRenderer.tags || null
-
+    const tags = channelPageDataResponse?.microformat?.microformatDataRenderer?.tags || null
     const channelInfo = {
-      author: channelMetaData.title,
-      authorId: channelMetaData.externalId,
-      authorUrl: channelMetaData.vanityChannelUrl,
+      author: channelMetaData?.title ?? channelHeaderData.title.simpleText,
+      authorId: channelMetaData?.externalId ?? channelHeaderData.navigationEndpoint.browseEndpoint.browseId,
+      authorUrl: channelMetaData?.vanityChannelUrl ?? channelHeaderData.navigationEndpoint.commandMetadata.webCommandMetadata.url,
       authorBanners: bannerThumbnails,
       authorThumbnails: channelHeaderData.avatar.thumbnails,
       subscriberText: subscriberText,
       subscriberCount: subscriberCount,
-      description: channelMetaData.description,
-      isFamilyFriendly: channelMetaData.isFamilySafe,
+      description: channelMetaData?.description ?? '',
+      isFamilyFriendly: channelMetaData?.isFamilySafe ?? false,
       relatedChannels: {
         items: relatedChannels,
         continuation: relatedChannelsContinuation
       },
-      allowedRegions: channelMetaData.availableCountryCodes,
+      allowedRegions: channelMetaData?.availableCountryCodes ?? [],
       isVerified: isVerified,
       isOfficialArtist: isOfficialArtist,
       tags: tags,
@@ -495,11 +498,7 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelHome(payload) {
-    const channelId = payload.channelId
-    const channelIdType = payload.channelIdType ?? 0
-    const httpAgent = payload.httpAgent ?? null
-
+  static async getChannelHome({ channelId, channelIdType = 0, httpAgent = null }) {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'home?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
@@ -531,10 +530,9 @@ class YoutubeGrabber {
     }
 
     const homeTab = YoutubeGrabberHelper.findTab(headerTabs)
-
     let featuredVideo = null
     let homeItems = []
-    if (homeTab !== undefined) {
+    if ('sectionListRenderer' in homeTab.tabRenderer.content) {
       homeItems = homeTab.tabRenderer.content.sectionListRenderer.contents.filter(x => {
         if ('shelfRenderer' in x.itemSectionRenderer.contents[0]) {
           return true

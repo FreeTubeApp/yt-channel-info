@@ -48,7 +48,7 @@ class PlaylistFetcher {
     let playlistData
     const playlistTab = YoutubeGrabberHelper.findTab(channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs)
 
-    if (playlistTab !== undefined) {
+    if (playlistTab && 'sectionListRenderer' in playlistTab.tabRenderer.content) {
       const tabRenderer = playlistTab.tabRenderer
       playlistData = tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
     }
