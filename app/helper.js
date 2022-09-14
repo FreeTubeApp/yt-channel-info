@@ -687,9 +687,9 @@ class YoutubeGrabberHelper {
     return { response: channelPageResponse, channelIdType: 3 }
   }
 
-  static findTab(tab) {
-    return tab.find((data) =>
-      data?.tabRenderer?.selected === true
+  static findTab(tabs) {
+    return tabs.find((tab) =>
+      tab?.tabRenderer?.selected === true
     )
   }
 
