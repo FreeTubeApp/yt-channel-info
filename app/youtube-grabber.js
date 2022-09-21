@@ -20,7 +20,10 @@ class YoutubeGrabber {
     if (channelPageResponse.data.response === undefined) {
       channelPageDataResponse = channelPageResponse.data[1].response
     }
-    const headerLinks = channelPageDataResponse.header.c4TabbedHeaderRenderer.headerLinks
+    let headerLinks
+    if ('c4TabbedHeaderRenderer' in channelPageDataResponse.header) {
+      headerLinks = channelPageDataResponse.header.c4TabbedHeaderRenderer.headerLinks
+    }
     const links = {
       primaryLinks: [],
       secondaryLinks: []
@@ -55,20 +58,22 @@ class YoutubeGrabber {
       }
     }
 
-    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
-    const channelHeaderData = channelPageDataResponse.header.c4TabbedHeaderRenderer
+    const channelMetaData = channelPageDataResponse?.metadata?.channelMetadataRenderer
+    let channelHeaderData = channelPageDataResponse.header.c4TabbedHeaderRenderer
+    if (!channelHeaderData) {
+      channelHeaderData = channelPageDataResponse.header.carouselHeaderRenderer.contents[1].topicChannelDetailsRenderer
+      //  = topicChannelDetailsRenderer
+    }
     const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
+    const channelTabs = headerTabs
+      .filter(tab => tab.tabRenderer !== undefined && tab.tabRenderer !== null)
+      .map(tab => tab.tabRenderer.title)
 
-    const channelsTab = headerTabs.filter((data) => {
-      if (typeof data.tabRenderer !== 'undefined') {
-        return data.tabRenderer.title === 'Channels'
-      }
-
-      return false
-    })
-
-    const featuredChannels = channelsTab[0].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
-
+    const channelsTab = YoutubeGrabberHelper.findTab(headerTabs)
+    let featuredChannels = {}
+    if (channelsTab && 'sectionListRenderer' in channelsTab.tabRenderer.content) {
+      featuredChannels = channelsTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
+    }
     let relatedChannels = []
     let relatedChannelsContinuation = null
 
@@ -131,27 +136,27 @@ class YoutubeGrabber {
       isOfficialArtist = channelHeaderData.badges.some((badge) => badge.metadataBadgeRenderer.style === 'BADGE_STYLE_TYPE_VERIFIED_ARTIST')
     }
 
-    const tags = channelPageDataResponse.microformat.microformatDataRenderer.tags || null
-
+    const tags = channelPageDataResponse?.microformat?.microformatDataRenderer?.tags || null
     const channelInfo = {
-      author: channelMetaData.title,
-      authorId: channelMetaData.externalId,
-      authorUrl: channelMetaData.vanityChannelUrl,
+      author: channelMetaData?.title ?? channelHeaderData.title.simpleText,
+      authorId: channelMetaData?.externalId ?? channelHeaderData.navigationEndpoint.browseEndpoint.browseId,
+      authorUrl: channelMetaData?.vanityChannelUrl ?? channelHeaderData.navigationEndpoint.commandMetadata.webCommandMetadata.url,
       authorBanners: bannerThumbnails,
       authorThumbnails: channelHeaderData.avatar.thumbnails,
       subscriberText: subscriberText,
       subscriberCount: subscriberCount,
-      description: channelMetaData.description,
-      isFamilyFriendly: channelMetaData.isFamilySafe,
+      description: channelMetaData?.description ?? '',
+      isFamilyFriendly: channelMetaData?.isFamilySafe ?? false,
       relatedChannels: {
         items: relatedChannels,
         continuation: relatedChannelsContinuation
       },
-      allowedRegions: channelMetaData.availableCountryCodes,
+      allowedRegions: channelMetaData?.availableCountryCodes ?? [],
       isVerified: isVerified,
       isOfficialArtist: isOfficialArtist,
       tags: tags,
       channelLinks: links,
+      channelTabs: channelTabs,
       channelIdType: decideResponse.channelIdType,
     }
 
@@ -334,6 +339,11 @@ class YoutubeGrabber {
     if (typeof channelPageDataResponse === 'undefined') {
       channelPageDataResponse = channelPageResponse.data[1].response
     }
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
+      return {
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
+      }
+    }
     const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
     const channelName = channelMetaData.title
 
@@ -457,28 +467,28 @@ class YoutubeGrabber {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'about?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
-    let headerTabs
-    if (channelPageResponse.data.response) {
-      headerTabs = channelPageResponse.data.response.contents.twoColumnBrowseResultsRenderer.tabs
-    } else {
-      headerTabs = channelPageResponse.data[1].response.contents.twoColumnBrowseResultsRenderer.tabs
-    }
-    const aboutTab = headerTabs.filter((data) => {
-      if (typeof data.tabRenderer !== 'undefined') {
-        return data.tabRenderer.title === 'About'
+    const channelPageDataResponse = channelPageResponse.data[1].response
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
+      return {
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
       }
-      return false
-    })[0]
-    const contents = aboutTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
-    const joined = Date.parse(contents.channelAboutFullMetadataRenderer.joinedDateText.runs[1].text)
+    }
+    const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
+    const aboutTab = YoutubeGrabberHelper.findTab(headerTabs)
+
     let views = '0'
     let location = 'unknown'
-    if ('viewCountText' in contents.channelAboutFullMetadataRenderer) {
-      views = contents.channelAboutFullMetadataRenderer.viewCountText.simpleText.replace(/\D/g, '')
-    }
+    let joined = null
+    if (aboutTab !== undefined) {
+      const contents = aboutTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
+      joined = Date.parse(contents.channelAboutFullMetadataRenderer.joinedDateText.runs[1].text)
+      if ('viewCountText' in contents.channelAboutFullMetadataRenderer) {
+        views = contents.channelAboutFullMetadataRenderer.viewCountText.simpleText.replace(/\D/g, '')
+      }
 
-    if ('country' in contents.channelAboutFullMetadataRenderer) {
-      location = contents.channelAboutFullMetadataRenderer.country.simpleText
+      if ('country' in contents.channelAboutFullMetadataRenderer) {
+        location = contents.channelAboutFullMetadataRenderer.country.simpleText
+      }
     }
 
     return {
@@ -488,17 +498,18 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelHome(payload) {
-    const channelId = payload.channelId
-    const channelIdType = payload.channelIdType ?? 0
-    const httpAgent = payload.httpAgent ?? null
-
+  static async getChannelHome({ channelId, channelIdType = 0, httpAgent = null }) {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const decideResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'home?flow=grid&view=0&pbj=1', channelIdType)
     const channelPageResponse = decideResponse.response
     let channelPageDataResponse = channelPageResponse.data.response
     if (typeof channelPageDataResponse === 'undefined') {
       channelPageDataResponse = channelPageResponse.data[1].response
+    }
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
+      return {
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
+      }
     }
     const headerTabs = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs
     let channelName
@@ -517,16 +528,11 @@ class YoutubeGrabber {
       channelName: channelName,
       channelUrl: channelUrl
     }
-    const homeTab = headerTabs.filter((data) => {
-      if (typeof data.tabRenderer !== 'undefined') {
-        return data.tabRenderer.title === 'Home'
-      }
 
-      return false
-    })[0]
+    const homeTab = YoutubeGrabberHelper.findTab(headerTabs)
     let featuredVideo = null
     let homeItems = []
-    if (homeTab !== undefined) {
+    if ('sectionListRenderer' in homeTab.tabRenderer.content) {
       homeItems = homeTab.tabRenderer.content.sectionListRenderer.contents.filter(x => {
         if ('shelfRenderer' in x.itemSectionRenderer.contents[0]) {
           return true

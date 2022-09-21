@@ -1,3 +1,4 @@
+const YoutubeGrabberHelper = require('../helper')
 const helper = require('../helper')
 
 class PlaylistFetcher {
@@ -24,9 +25,19 @@ class PlaylistFetcher {
     if (typeof (channelPageDataResponse) === 'undefined') {
       channelPageDataResponse = response.data[1].response
     }
-    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
-    const channelName = channelMetaData.title
-    const channelId = channelMetaData.externalId
+    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
+      return {
+        alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
+      }
+    }
+    let channelName
+    let channelMetaData
+    let channelId
+    if ('metadata' in channelPageDataResponse) {
+      channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
+      channelName = channelMetaData.title
+      channelId = channelMetaData.externalId
+    }
     const ytGrabHelp = helper.create(httpAgent)
 
     const channelInfo = {
@@ -34,9 +45,13 @@ class PlaylistFetcher {
       channelName: channelName,
       channelUrl: `https://www.youtube.com/channel/${channelId}`
     }
+    let playlistData
+    const playlistTab = YoutubeGrabberHelper.findTab(channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs)
 
-    const playlistData = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[2].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
-
+    if (playlistTab && 'sectionListRenderer' in playlistTab.tabRenderer.content) {
+      const tabRenderer = playlistTab.tabRenderer
+      playlistData = tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    }
     if (typeof (playlistData) === 'undefined') {
       return {
         continuation: null,

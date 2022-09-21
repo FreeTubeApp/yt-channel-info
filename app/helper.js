@@ -64,11 +64,18 @@ class YoutubeGrabberHelper {
         alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
       }
     }
+    let channelMetaData
+    let channelName
+    if ('metadata' in channelPageDataResponse) {
+      channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
+      channelName = channelMetaData.title
+    }
+    const videoTab = YoutubeGrabberHelper.findTab(channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs)
 
-    const channelMetaData = channelPageDataResponse.metadata.channelMetadataRenderer
-    const channelName = channelMetaData.title
-    const channelVideoData = channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs[1].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
-
+    let channelVideoData
+    if (videoTab && 'sectionListRenderer' in videoTab.tabRenderer.content) {
+      channelVideoData = videoTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    }
     if (typeof (channelVideoData) === 'undefined') {
       // Channel has no videos
       return {
@@ -116,7 +123,7 @@ class YoutubeGrabberHelper {
     const channelUrl = author.navigationEndpoint.browseEndpoint.canonicalBaseUrl
     const thumbnail = author.thumbnail.thumbnails
     let videoCount = 0
-    if ('videoCout' in author) {
+    if ('videoCountText' in author) {
       videoCount = author.videoCountText.runs[0].text
     }
     let subscriberText
@@ -294,9 +301,20 @@ class YoutubeGrabberHelper {
 
     // Parse the JSON data and get the relevent array with data
     let contentDataJSON = JSON.parse(contentDataString)
-    contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
-    if ('continuationItemRenderer' in contentDataJSON.contents[contentDataJSON.contents.length - 1]) {
-      return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey, channelIdType: channelIdType }
+    if (typeof (contentDataJSON.alerts) !== 'undefined') {
+      return {
+        alertMessage: contentDataJSON.alerts[0].alertRenderer.text.simpleText
+      }
+    }
+    const communityTab = YoutubeGrabberHelper.findTab(contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs)
+
+    if (communityTab) {
+      contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
+      if ('continuationItemRenderer' in contentDataJSON.contents[contentDataJSON.contents.length - 1]) {
+        return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey, channelIdType: channelIdType }
+      }
+    } else {
+      contentDataJSON = { contents: [] }
     }
     return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: null, innerTubeApi: null, channelIdType: channelIdType }
   }
@@ -667,6 +685,12 @@ class YoutubeGrabberHelper {
       return Promise.reject(channelPageResponse.message)
     }
     return { response: channelPageResponse, channelIdType: 3 }
+  }
+
+  static findTab(tabs) {
+    return tabs.find((tab) =>
+      tab?.tabRenderer?.selected === true
+    )
   }
 
   static create(httpsAgent) {
