@@ -188,9 +188,9 @@ class YoutubeGrabberHelper {
     let publishedText = ''
     if (typeof (obj.richItemRenderer) !== 'undefined') {
       video = obj.richItemRenderer.content.videoRenderer
-      video.lengthSeconds = video.lengthText.simpleText.split(':').reduce((acc,time) => (60 * acc) + +time)
+      video.lengthSeconds = video.lengthText.simpleText.split(':').reduce((acc, time) => (60 * acc) + +time)
       video.title.simpleText = video.title.runs.at(0)
-    } else if (typeof(obj.reelItemRenderer) !== 'undefined') {
+    } else if (typeof (obj.reelItemRenderer) !== 'undefined') {
       video = obj.reelItemRenderer
       video.title = video.headline
       video.publishedTimeText = { simpleText: '' }
