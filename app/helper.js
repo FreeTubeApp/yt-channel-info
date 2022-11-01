@@ -73,8 +73,8 @@ class YoutubeGrabberHelper {
     const videoTab = YoutubeGrabberHelper.findTab(channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs)
 
     let channelVideoData
-    if (videoTab && 'sectionListRenderer' in videoTab.tabRenderer.content) {
-      channelVideoData = videoTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    if (videoTab && 'richGridRenderer' in videoTab.tabRenderer.content) {
+      channelVideoData = { items: videoTab.tabRenderer.content.richGridRenderer.contents }
     }
     if (typeof (channelVideoData) === 'undefined') {
       // Channel has no videos
@@ -181,8 +181,9 @@ class YoutubeGrabberHelper {
     let lengthSeconds = 0
     let durationText
     let publishedText = ''
-
-    if (typeof (obj.gridVideoRenderer) === 'undefined' && typeof (obj.videoRenderer) !== 'undefined') {
+    if (typeof (obj.richItemRenderer) !== 'undefined') {
+      video = obj.richItemRenderer.content.videoRenderer
+    } else if (typeof (obj.gridVideoRenderer) === 'undefined' && typeof (obj.videoRenderer) !== 'undefined') {
       video = obj.videoRenderer
     } else if (typeof (obj.gridVideoRenderer) !== 'undefined') {
       video = obj.gridVideoRenderer
