@@ -247,13 +247,24 @@ class YoutubeGrabber {
       nextContinuation = continuationItem[0].continuationItemRenderer.continuationEndpoint.continuationCommand.token
     }
 
-    const channelMetaData = channelPageResponse.data.metadata.channelMetadataRenderer
-    const channelName = channelMetaData.title
-    const channelId = channelMetaData.externalId
+    const channelMetaData = channelPageResponse.data?.metadata?.channelMetadataRenderer
+    let channelInfo = {}
+    if (channelMetaData) {
+      const channelName = channelMetaData.title
+      const channelId = channelMetaData.externalId
 
-    const channelInfo = {
-      channelId: channelId,
-      channelName: channelName
+      channelInfo = {
+        channelId,
+        channelName
+      }
+    } else {
+      const firstVideoTitle = continuationData[0].richItemRenderer.content.videoRenderer.title
+      const firstPublishTimeText = continuationData[0].richItemRenderer.content.videoRenderer.publishedTimeText
+
+      channelInfo = {
+        channelId: channelPageResponse.data.responseContext.serviceTrackingParams.find((service) => service.service === "GOOGLE_HELP").params[0].value,
+        channelName: new RegExp(`${firstVideoTitle.runs[0].text} by (.*?) ${firstPublishTimeText.simpleText}`, 'g').exec(firstVideoTitle.accessibility.accessibilityData.label)[1]
+      }
     }
 
     const nextVideos = continuationData.filter((item) => {
