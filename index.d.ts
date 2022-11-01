@@ -71,7 +71,7 @@ declare module "yt-channel-info" {
     }
 
     interface ChannelPlaylistPayload extends ChannelInfoPayload {
-        sortBy?: "last" | "oldest" | "newest";
+        sortBy?: "last" | "newest";
     }
 
     /**
