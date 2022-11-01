@@ -321,7 +321,7 @@ class YoutubeGrabberHelper {
     const communityTab = YoutubeGrabberHelper.findTab(contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs)
 
     if (communityTab) {
-      contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs[3].tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
+      contentDataJSON = contentDataJSON.contents.twoColumnBrowseResultsRenderer.tabs.find((tab) => tab.tabRenderer?.title === "Community").tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer
       if ('continuationItemRenderer' in contentDataJSON.contents[contentDataJSON.contents.length - 1]) {
         return { items: this.createCommunityPostArray(contentDataJSON.contents), continuation: contentDataJSON.contents[contentDataJSON.contents.length - 1].continuationItemRenderer.continuationEndpoint.continuationCommand.token, innerTubeApi: innertubeAPIkey, channelIdType: channelIdType }
       }
