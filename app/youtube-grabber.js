@@ -262,7 +262,7 @@ class YoutubeGrabber {
       const firstPublishTimeText = continuationData[0].richItemRenderer.content.videoRenderer.publishedTimeText
 
       channelInfo = {
-        channelId: channelPageResponse.data.responseContext.serviceTrackingParams.find((service) => service.service === "GOOGLE_HELP").params[0].value,
+        channelId: channelPageResponse.data.responseContext.serviceTrackingParams.find((service) => service.service === 'GOOGLE_HELP').params[0].value,
         channelName: new RegExp(`${firstVideoTitle.runs[0].text} by (.*?) ${firstPublishTimeText.simpleText}`, 'g').exec(firstVideoTitle.accessibility.accessibilityData.label)[1]
       }
     }
