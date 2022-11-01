@@ -14,12 +14,6 @@ describe('Playlists', () => {
       })
     })
   })
-  test('Get channel playlists oldest', () => {
-    const parameters = { channelId: 'UCMO51vS4kaOSLqBD9bmZGIg', channelIdType: 1, sortBy: 'oldest' }
-    return ytch.getChannelPlaylistInfo(parameters).then((data) => {
-      expect(data.items.length).not.toBe(0)
-    })
-  })
   test('Get channel playlists newest', () => {
     const parameters = { channelId: 'UCMO51vS4kaOSLqBD9bmZGIg', channelIdType: 1, sortBy: 'newest' }
     return ytch.getChannelPlaylistInfo(parameters).then((data) => {

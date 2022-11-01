@@ -8,12 +8,6 @@ class PlaylistFetcher {
     return await this.parseChannelPlaylistResponse(channelPageResponse.response, channelPageResponse.channelIdType)
   }
 
-  static async getChannelPlaylistOldest (channelId, channelIdType, httpAgent = null) {
-    const ytGrabHelp = helper.create(httpAgent)
-    const channelPageResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'playlists?view=1&sort=da&flow=grid&pbj=1', channelIdType)
-    return await this.parseChannelPlaylistResponse(channelPageResponse.response, channelPageResponse.channelIdType)
-  }
-
   static async getChannelPlaylistNewest (channelId, channelIdType, httpAgent = null) {
     const ytGrabHelp = helper.create(httpAgent)
     const channelPageResponse = await ytGrabHelp.decideUrlRequestType(channelId, 'playlists?view=1&sort=dd&flow=grid&pbj=1', channelIdType)

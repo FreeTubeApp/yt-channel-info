@@ -271,9 +271,6 @@ class YoutubeGrabber {
   static async getChannelPlaylistInfo({ channelId, sortBy = 'last', channelIdType = 0, httpAgent = null }) {
     if (sortBy === 'newest') {
       return await YoutubePlaylistFetcher.getChannelPlaylistNewest(channelId, channelIdType, httpAgent)
-    } else if (sortBy === 'oldest') {
-      console.warn("yt-channel-info: Fetching by oldest isn't available in YouTube any more. This option will be removed in a later update.")
-      return await YoutubePlaylistFetcher.getChannelPlaylistOldest(channelId, channelIdType, httpAgent)
     } else { // last
       return await YoutubePlaylistFetcher.getChannelPlaylistLast(channelId, channelIdType, httpAgent)
     }
