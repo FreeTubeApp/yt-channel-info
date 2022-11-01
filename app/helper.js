@@ -189,7 +189,7 @@ class YoutubeGrabberHelper {
     if (typeof (obj.richItemRenderer) !== 'undefined') {
       video = obj.richItemRenderer.content.videoRenderer
       video.lengthSeconds = video.lengthText.simpleText.split(':').reduce((acc, time) => (60 * acc) + +time)
-      video.title.simpleText = video.title.runs.at(0)
+      video.title.simpleText = video.title.runs.at(0).text
     } else if (typeof (obj.reelItemRenderer) !== 'undefined') {
       video = obj.reelItemRenderer
       video.title = video.headline
