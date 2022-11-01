@@ -183,6 +183,7 @@ class YoutubeGrabberHelper {
     let publishedText = ''
     if (typeof (obj.richItemRenderer) !== 'undefined') {
       video = obj.richItemRenderer.content.videoRenderer
+      video.lengthSeconds = video.lengthText.simpleText.split(':').reduce((acc,time) => (60 * acc) + +time)
     } else if (typeof (obj.gridVideoRenderer) === 'undefined' && typeof (obj.videoRenderer) !== 'undefined') {
       video = obj.videoRenderer
     } else if (typeof (obj.gridVideoRenderer) !== 'undefined') {
