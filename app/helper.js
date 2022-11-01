@@ -75,6 +75,8 @@ class YoutubeGrabberHelper {
     let channelVideoData
     if (videoTab && 'richGridRenderer' in videoTab.tabRenderer.content) {
       channelVideoData = { items: videoTab.tabRenderer.content.richGridRenderer.contents }
+    } else if (videoTab && 'sectionListRenderer' in videoTab.tabRenderer.content) {
+      channelVideoData = videoTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
     }
     if (typeof (channelVideoData) === 'undefined') {
       // Channel has no videos
