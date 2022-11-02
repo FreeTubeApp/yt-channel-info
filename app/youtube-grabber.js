@@ -258,12 +258,19 @@ class YoutubeGrabber {
         channelName
       }
     } else {
-      const firstVideoTitle = continuationData[0].richItemRenderer.content.videoRenderer.title
-      const firstPublishTimeText = continuationData[0].richItemRenderer.content.videoRenderer.publishedTimeText
-
-      channelInfo = {
-        channelId: channelPageResponse.data.responseContext.serviceTrackingParams.find((service) => service.service === 'GOOGLE_HELP').params[0].value,
-        channelName: new RegExp(`${firstVideoTitle.runs[0].text} by (.*?) ${firstPublishTimeText.simpleText}`, 'g').exec(firstVideoTitle.accessibility.accessibilityData.label)[1]
+      let i = 0
+      // Look through every video until you can successfully find the channel metadata
+      while (channelInfo.channelName === undefined && i < continuationData.length - 1) {
+        const videoTitle = continuationData[i].richItemRenderer.content.videoRenderer.title
+        const publishTimeText = continuationData[i].richItemRenderer.content.videoRenderer.publishedTimeText
+        channelInfo = {
+          channelId: channelPageResponse.data.responseContext.serviceTrackingParams.find((service) => service.service === 'GOOGLE_HELP').params[0].value
+        }
+        const channelNameRegex = new RegExp(`${videoTitle.runs[0].text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} by (.*?) ${publishTimeText.simpleText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g').exec(videoTitle.accessibility.accessibilityData.label)
+        if (channelNameRegex !== null && channelNameRegex.length > 1) {
+          channelInfo.channelName = channelNameRegex[1]
+        }
+        i++
       }
     }
 
