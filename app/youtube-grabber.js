@@ -263,7 +263,7 @@ class YoutubeGrabber {
 
       channelInfo = {
         channelId: channelPageResponse.data.responseContext.serviceTrackingParams.find((service) => service.service === 'GOOGLE_HELP').params[0].value,
-        channelName: new RegExp(`${firstVideoTitle.runs[0].text} by (.*?) ${firstPublishTimeText.simpleText}`, 'g').exec(firstVideoTitle.accessibility.accessibilityData.label)[1]
+        channelName: new RegExp(`${firstVideoTitle.runs[0].text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} by (.*?) ${firstPublishTimeText.simpleText}`, 'g').exec(firstVideoTitle.accessibility.accessibilityData.label)[1]
       }
     }
 
