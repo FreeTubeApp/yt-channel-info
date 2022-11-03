@@ -73,7 +73,9 @@ class YoutubeGrabberHelper {
     const videoTab = YoutubeGrabberHelper.findTab(channelPageDataResponse.contents.twoColumnBrowseResultsRenderer.tabs)
 
     let channelVideoData
-    if (videoTab && 'richGridRenderer' in videoTab.tabRenderer.content) {
+    if (videoTab && 'sectionListRenderer' in videoTab.tabRenderer.content) {
+      channelVideoData = videoTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0].gridRenderer
+    } else if (videoTab && 'richGridRenderer' in videoTab.tabRenderer.content) {
       channelVideoData = { items: videoTab.tabRenderer.content.richGridRenderer.contents }
     } else if (videoTab && 'sectionListRenderer' in videoTab.tabRenderer.content) {
       const contents = videoTab.tabRenderer.content.sectionListRenderer.contents[0].itemSectionRenderer.contents[0]
