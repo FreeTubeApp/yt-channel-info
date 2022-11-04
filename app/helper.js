@@ -80,6 +80,9 @@ class YoutubeGrabberHelper {
       if ('reelShelfRenderer' in contents) {
         channelVideoData = contents.reelShelfRenderer
       }
+      if ('gridRenderer' in contents) {
+        channelVideoData = contents.gridRenderer
+      }
     }
     if (typeof (channelVideoData) === 'undefined') {
       // Channel has no videos
