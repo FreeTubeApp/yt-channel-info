@@ -51,6 +51,13 @@ describe('Getting channel videos', () => {
     })
   })
 
+  test('Live channel', () => {
+    const parameters = { channelId: 'UCSJ4gkVC6NrvII8umztf0Ow', channelIdType: 1 }
+    return ytch.getChannelVideos(parameters).then((data) => {
+      expect(data.items.filter((item) => item.liveNow).length).not.toBe(0)
+    })
+  })
+
   test('Upcoming video', () => {
     // https://www.youtube.com/channel/UCUKPG1-r4WFyxpyhIuCs86Q
     // This channel has a video premiering in 2024/3/31
