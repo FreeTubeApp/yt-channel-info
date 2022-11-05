@@ -224,6 +224,14 @@ class YoutubeGrabber {
     }
   }
 
+  static async getChannelLivestreams({ channelId, channelIdType = 0, httpAgent = null }) {
+    return await YoutubeChannelFetcher.getChannelList(channelId, channelIdType, 'streams', httpAgent)
+  }
+
+  static async getChannelShorts({ channelId, channelIdType = 0, httpAgent = null }) {
+    return await YoutubeChannelFetcher.getChannelList(channelId, channelIdType, 'shorts', httpAgent)
+  }
+
   static async getChannelVideosMore({ continuation, httpAgent = null }) {
     const ytGrabHelp = YoutubeGrabberHelper.create(httpAgent)
     const urlParams = this.GetContinuationUrlParams(continuation)
