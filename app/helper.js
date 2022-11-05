@@ -2,7 +2,7 @@
 const axios = require('axios')
 
 class YoutubeGrabberHelper {
-  constructor(httpsAgent) {
+  constructor (httpsAgent) {
     this.session = axios.create({
       timeout: 10000,
       headers: {
