@@ -224,12 +224,12 @@ class YoutubeGrabber {
     }
   }
 
-  static async getChannelLivestreams({ channelId, channelIdType = 0, httpAgent = null }) {
-    return await YoutubeChannelFetcher.getChannelList(channelId, channelIdType, 'streams', httpAgent)
+  static async getChannelLivestreams({ channelId, sortBy = 'newest', channelIdType = 0, httpAgent = null }) {
+    return await YoutubeChannelFetcher.getChannelList(channelId, channelIdType, 'streams', sortBy, httpAgent)
   }
 
-  static async getChannelShorts({ channelId, channelIdType = 0, httpAgent = null }) {
-    return await YoutubeChannelFetcher.getChannelList(channelId, channelIdType, 'shorts', httpAgent)
+  static async getChannelShorts({ channelId, sortBy = 'newest', channelIdType = 0, httpAgent = null }) {
+    return await YoutubeChannelFetcher.getChannelList(channelId, channelIdType, 'shorts', sortBy, httpAgent)
   }
 
   static async getChannelVideosMore({ continuation, httpAgent = null }) {
