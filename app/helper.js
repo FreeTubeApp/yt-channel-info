@@ -2,7 +2,7 @@
 const axios = require('axios')
 
 class YoutubeGrabberHelper {
-  constructor (httpsAgent) {
+  constructor(httpsAgent) {
     this.session = axios.create({
       timeout: 10000,
       headers: {
@@ -192,10 +192,10 @@ class YoutubeGrabberHelper {
     if (typeof (obj.richItemRenderer) !== 'undefined') {
       video = obj.richItemRenderer.content.videoRenderer
       video.lengthSeconds = video.lengthText.simpleText.split(':').reduce((acc, time) => (60 * acc) + +time)
-      video.title.simpleText = video.title.runs.at(0).text
+      video.title.simpleText = video.title.runs[0].text
     } else if ((typeof obj.videoRenderer) !== 'undefined') {
       video = obj.videoRenderer
-      video.title.simpleText = video.title.runs.at(0).text
+      video.title.simpleText = video.title.runs[0].text
     } else if (typeof (obj.reelItemRenderer) !== 'undefined') {
       video = obj.reelItemRenderer
       video.title = video.headline
