@@ -250,8 +250,8 @@ class YoutubeGrabberHelper {
 
       publishedText = video.publishedTimeText.simpleText
 
-      if (video.thumbnailOverlays && typeof (video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer) !== 'undefined') {
-        durationText = video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer.text.simpleText
+      if (video.thumbnailOverlays && typeof (statusRenderer) !== 'undefined') {
+        durationText = statusRenderer.text.simpleText
         const durationSplit = durationText.split(':')
 
         if (durationSplit.length === 3) {
