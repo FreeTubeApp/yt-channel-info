@@ -579,7 +579,7 @@ class YoutubeGrabberHelper {
     } else if ('itemSectionRenderer' in item) {
       if ('channelFeaturedContentRenderer' in item.itemSectionRenderer.contents[0]) {
         type = 'livestreams'
-        shelfName = item.itemSectionRenderer.contents[0].channelFeaturedContentRenderer.title.runs.map(run => run.text).join(" ");
+        shelfName = item.itemSectionRenderer.contents[0].channelFeaturedContentRenderer.title.runs.map(run => run.text).join(' ')
         items = item.itemSectionRenderer.contents[0].channelFeaturedContentRenderer.items.map(item => this.parseVideo(item, channelInfo))
       } else {
         const shelf = item.itemSectionRenderer.contents[0].shelfRenderer
