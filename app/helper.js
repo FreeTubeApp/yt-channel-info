@@ -200,6 +200,9 @@ class YoutubeGrabberHelper {
         video.title = video.headline
         video.publishedTimeText = { simpleText: '' }
       }
+    } else if ((typeof obj.videoRenderer) !== 'undefined') {
+      video = obj.videoRenderer
+      video.title.simpleText = video.title.runs[0].text
     } else if (typeof (obj.reelItemRenderer) !== 'undefined') {
       video = obj.reelItemRenderer
       video.title = video.headline
@@ -227,12 +230,19 @@ class YoutubeGrabberHelper {
       viewCount = parseInt(video.viewCountText.runs[0].text.split(',').join(''))
       viewCountText = video.shortViewCountText.runs[0].text + video.shortViewCountText.runs[1].text
     } else if (typeof (statusRenderer) !== 'undefined' && typeof (statusRenderer.text) !== 'undefined' && typeof (statusRenderer.text.runs) !== 'undefined') {
-      premiere = true
-      durationText = 'PREMIERE'
-      viewCount = 0
-      viewCountText = '0 views'
-      const premiereDate = new Date(parseInt(video.upcomingEventData.startTime * 1000))
-      publishedText = premiereDate.toLocaleString()
+      if (statusRenderer.text.runs.map(run => run.text).includes('LIVE')) {
+        liveNow = true
+        publishedText = 'Live'
+        viewCount = 0
+        viewCountText = '0 views'
+      } else {
+        premiere = true
+        durationText = 'PREMIERE'
+        viewCount = 0
+        viewCountText = '0 views'
+        const premiereDate = new Date(parseInt(video.upcomingEventData.startTime * 1000))
+        publishedText = premiereDate.toLocaleString()
+      }
     } else if (typeof (video.viewCountText) === 'undefined') {
       premium = true
       if (typeof (video.publishedTimeText) === 'undefined') {
@@ -574,65 +584,82 @@ class YoutubeGrabberHelper {
     } else if ('richItemRenderer' in item) {
       items = [this.parseVideo(item.richItemRenderer.content, channelInfo)]
     } else if ('itemSectionRenderer' in item) {
-      const shelf = item.itemSectionRenderer.contents[0].shelfRenderer
-
-      if ('runs' in shelf.title) {
-        const title = shelf.title.runs[0]
-        if ('navigationEndpoint' in title) {
-          shelfUrl = title.navigationEndpoint.commandMetadata.webCommandMetadata.url
-        }
-        shelfName = title.text
+      if ('channelFeaturedContentRenderer' in item.itemSectionRenderer.contents[0]) {
+        type = 'livestreams'
+        shelfName = item.itemSectionRenderer.contents[0].channelFeaturedContentRenderer.title.runs.map(run => run.text).join(' ')
+        items = item.itemSectionRenderer.contents[0].channelFeaturedContentRenderer.items.map(item => this.parseVideo(item, channelInfo))
       } else {
-        shelfName = shelf.title.simpleText
-        shelfUrl = shelf.endpoint.commandMetadata.webCommandMetadata.url
-      }
-      if (shelfUrl === null) {
-        let shelfRenderer
-        if ('expandedShelfContentsRenderer' in shelf.content) {
-          type = 'verticalVideoList'
-          shelfRenderer = shelf.content.expandedShelfContentsRenderer
-          items = shelfRenderer.items.map(video => {
-            return this.parseVideo(video, channelInfo)
-          })
+        const shelf = item.itemSectionRenderer.contents[0].shelfRenderer
+
+        if ('runs' in shelf.title) {
+          const title = shelf.title.runs[0]
+          if ('navigationEndpoint' in title) {
+            shelfUrl = title.navigationEndpoint.commandMetadata.webCommandMetadata.url
+          }
+          shelfName = title.text
         } else {
-          type = 'playlist'
-          shelfRenderer = shelf.content.horizontalListRenderer
-          items = shelfRenderer.items.map(pl => {
-            return this.parsePlaylist(pl, channelInfo)
-          })
+          shelfName = shelf.title.simpleText
+          shelfUrl = shelf.endpoint.commandMetadata.webCommandMetadata.url
         }
-      } else if (/\?list=/.test(shelfUrl)) {
-        type = 'playlist' // similar to videos but links to a playlist url
-        if ('horizontalListRenderer' in shelf.content) {
+        if (shelfUrl === null) {
+          let shelfRenderer
+          if ('expandedShelfContentsRenderer' in shelf.content) {
+            type = 'verticalVideoList'
+            shelfRenderer = shelf.content.expandedShelfContentsRenderer
+            items = shelfRenderer.items.map(video => {
+              return this.parseVideo(video, channelInfo)
+            })
+          } else {
+            type = 'playlist'
+            shelfRenderer = shelf.content.horizontalListRenderer
+            items = shelfRenderer.items.map(pl => {
+              return this.parsePlaylist(pl, channelInfo)
+            })
+          }
+        } else if (/\?list=/.test(shelfUrl)) {
+          type = 'playlist' // similar to videos but links to a playlist url
+          if ('horizontalListRenderer' in shelf.content) {
+            items = shelf.content.horizontalListRenderer.items.map(video => {
+              return this.parseVideo(video, channelInfo)
+            })
+          } else {
+            items = shelf.content.expandedShelfContentsRenderer.items.map(video => {
+              return this.parseVideo(video, channelInfo)
+            })
+          }
+        } else if (/\/channels/.test(shelfUrl)) {
+          type = 'channels'
+          if ('expandedShelfContentsRenderer' in shelf.content) {
+            items = shelf.content.expandedShelfContentsRenderer.items.map(channel => {
+              return this.parseFeaturedChannel(channel.channelRenderer)
+            })
+          } else {
+            items = shelf.content.horizontalListRenderer.items.map(channel => {
+              return this.parseFeaturedChannel(channel.gridChannelRenderer)
+            })
+          }
+        } else if (/\/videos/.test(shelfUrl)) {
+          type = 'videos'
           items = shelf.content.horizontalListRenderer.items.map(video => {
             return this.parseVideo(video, channelInfo)
           })
-        } else {
-          items = shelf.content.expandedShelfContentsRenderer.items.map(video => {
-            return this.parseVideo(video, channelInfo)
-          })
-        }
-      } else if (/\/channels/.test(shelfUrl)) {
-        type = 'channels'
-        items = shelf.content.horizontalListRenderer.items.map(channel => {
-          return this.parseFeaturedChannel(channel.gridChannelRenderer)
-        })
-      } else if (/\/videos/.test(shelfUrl)) {
-        type = 'videos'
-        items = shelf.content.horizontalListRenderer.items.map(video => {
-          return this.parseVideo(video, channelInfo)
-        })
-      } else if (/\/playlists/.test(shelfUrl)) {
-        if (shelf.content.horizontalListRenderer.items[0].compactStationRenderer != null) {
-          type = 'mix'
-          items = shelf.content.horizontalListRenderer.items.map(mix => {
-            return this.parseMix(mix, channelInfo)
-          })
-        } else {
-          type = 'playlists'
-          items = shelf.content.horizontalListRenderer.items.map(playlist => {
-            return this.parsePlaylist(playlist, channelInfo)
-          })
+        } else if (/\/playlists/.test(shelfUrl)) {
+          if (shelf.content.horizontalListRenderer !== undefined && shelf.content.horizontalListRenderer.items[0].compactStationRenderer != null) {
+            type = 'mix'
+            items = shelf.content.horizontalListRenderer.items.map(mix => {
+              return this.parseMix(mix, channelInfo)
+            })
+          } else if (shelf.content.expandedShelfContentsRenderer !== undefined && shelf.content.expandedShelfContentsRenderer.items[0].playlistRenderer != null) {
+            type = 'playlists'
+            items = shelf.content.expandedShelfContentsRenderer.items.map(playlist => {
+              return this.parsePlaylist(playlist, channelInfo)
+            })
+          } else {
+            type = 'playlists'
+            items = shelf.content.horizontalListRenderer.items.map(playlist => {
+              return this.parsePlaylist(playlist, channelInfo)
+            })
+          }
         }
       }
     }

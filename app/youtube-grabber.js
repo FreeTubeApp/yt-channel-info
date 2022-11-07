@@ -561,6 +561,8 @@ class YoutubeGrabber {
           return true
         } else if ('channelVideoPlayerRenderer' in x.itemSectionRenderer.contents[0]) {
           featuredVideo = ytGrabHelp.parseVideo(x.itemSectionRenderer.contents[0], channelInfo)
+        } else if ('channelFeaturedContentRenderer' in x.itemSectionRenderer.contents[0]) {
+          return true
         }
         return false
       })
