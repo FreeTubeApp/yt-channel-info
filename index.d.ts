@@ -231,7 +231,7 @@ declare module "yt-channel-info" {
         featuredVideo : Video
         items: {
             shelfName: string;
-            type: 'videos' | 'verticalVideoList' | 'playlist' | 'channels' | 'mix' | 'playlists' | 'video'
+            type: 'videos' | 'verticalVideoList' | 'playlist' | 'channels' | 'mix' | 'playlists' | 'video' | 'livestreams'
             items: Video[] | RelatedChannel[] | Playlist[] | Mix
         }
     }
