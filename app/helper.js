@@ -59,7 +59,7 @@ class YoutubeGrabberHelper {
     if (typeof (channelPageDataResponse) === 'undefined') {
       channelPageDataResponse = response.data[1].response
     }
-    if (typeof (channelPageDataResponse.alerts) !== 'undefined') {
+    if ('alerts' in channelPageDataResponse) {
       return {
         alertMessage: channelPageDataResponse.alerts[0].alertRenderer.text.simpleText
       }
@@ -190,9 +190,16 @@ class YoutubeGrabberHelper {
     let durationText
     let publishedText = ''
     if (typeof (obj.richItemRenderer) !== 'undefined') {
-      video = obj.richItemRenderer.content.videoRenderer
-      video.lengthSeconds = video.lengthText.simpleText.split(':').reduce((acc, time) => (60 * acc) + +time)
-      video.title.simpleText = video.title.runs[0].text
+      if ('videoRenderer' in obj.richItemRenderer.content) {
+        video = obj.richItemRenderer.content.videoRenderer
+        video.lengthSeconds = video.lengthText?.simpleText.split(':')?.reduce((acc, time) => (60 * acc) + +time)
+        video.title.simpleText = video.title.runs[0].text
+      }
+      if ('reelItemRenderer' in obj.richItemRenderer.content) {
+        video = obj.richItemRenderer.content.reelItemRenderer
+        video.title = video.headline
+        video.publishedTimeText = { simpleText: '' }
+      }
     } else if ((typeof obj.videoRenderer) !== 'undefined') {
       video = obj.videoRenderer
       video.title.simpleText = video.title.runs[0].text
@@ -210,7 +217,7 @@ class YoutubeGrabberHelper {
 
     let title = video.title.simpleText
     let statusRenderer
-    if (!('channelVideoPlayerRenderer' in obj) && !('reelItemRenderer' in obj)) {
+    if (video.thumbnailOverlays) {
       statusRenderer = video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer
     }
 
@@ -253,8 +260,8 @@ class YoutubeGrabberHelper {
 
       publishedText = video.publishedTimeText.simpleText
 
-      if (!('channelVideoPlayerRenderer' in obj) && !('reelItemRenderer' in obj) && typeof (video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer) !== 'undefined') {
-        durationText = video.thumbnailOverlays[0].thumbnailOverlayTimeStatusRenderer.text.simpleText
+      if (video.thumbnailOverlays && typeof (statusRenderer) !== 'undefined') {
+        durationText = statusRenderer.text.simpleText
         const durationSplit = durationText.split(':')
 
         if (durationSplit.length === 3) {

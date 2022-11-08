@@ -32,7 +32,7 @@ describe('Getting channel videos', () => {
 
   test('Shorts Channel', () => {
     const parameters = { channelId: 'UC4-79UOlP48-QNGgCko5p2g', channelIdType: 1 }
-    return ytch.getChannelVideos(parameters).then((data) => {
+    return ytch.getChannelShorts(parameters).then((data) => {
       expect(data.items.length).not.toBe(0)
     })
   })
@@ -48,6 +48,13 @@ describe('Getting channel videos', () => {
     const parameters = { channelId: 'UCS-DgEvT4XuQsrrmI7iZVsA', channelIdType: 1 }
     return ytch.getChannelVideos(parameters).then((data) => {
       expect(data.items.length).toBe(0)
+    })
+  })
+
+  test('Live channel', () => {
+    const parameters = { channelId: 'UCSJ4gkVC6NrvII8umztf0Ow', channelIdType: 1 }
+    return ytch.getChannelLivestreams(parameters).then((data) => {
+      expect(data.items.filter((item) => item.liveNow).length).not.toBe(0)
     })
   })
 
