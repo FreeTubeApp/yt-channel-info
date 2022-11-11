@@ -74,6 +74,14 @@ declare module "yt-channel-info" {
         sortBy?: "last" | "newest";
     }
 
+    interface ChannelLivestreamsPayload extends ChannelInfoPayload {
+        sortBy?: "newest";
+    }
+
+    interface ChannelShortsPayload extends ChannelInfoPayload {
+        sortBy?: "newest";
+    }
+
     /**
      * ChannelInfo type returned by getChannelVideos and getChannelInfoMore
      */
@@ -249,6 +257,10 @@ declare module "yt-channel-info" {
         static searchChannel(payload: ChannelSearchPayload): Promise<ChannelInfoResponseContinuation<Video>>;
 
         static searchChannelMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<Video>>;
+
+        static getChannelLivestreams(payload: ChannelLivestreamsPayload): ChannelInfoResponse<Video>;
+        
+        static getChannelShorts(payload: ChannelShortsPayload): ChannelInfoResponse<Video>;
 
         static getRelatedChannelsMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<RelatedChannel>>;
 
