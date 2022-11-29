@@ -677,63 +677,56 @@ class YoutubeGrabberHelper {
       case 1: return this.performChannelUrlRequest(channelId, urlAppendix)
       case 2: return this.performUserUrlRequest(channelId, urlAppendix)
       case 3: return this.performCUrlRequest(channelId, urlAppendix)
+      case 4: return this.performChannelTagRequest(channelId, urlAppendix)
+      case 5: return this.performChannelRequest(channelId, urlAppendix)
       default: return this.performChannelPageRequestWithFallbacks(channelId, urlAppendix)
     }
   }
 
-  async performChannelPageRequestWithFallbacks(channelId, urlAppendix) {
-    const ajaxUrl = `https://www.youtube.com/channel/${channelId}/${urlAppendix}`
-    let workedUrl = 1
-    let channelPageResponse = await this.makeChannelRequest(ajaxUrl)
+  async performChannelRequest(ajaxUrl, urlAppendix, cType) {
+    if (urlAppendix !== null) {
+      ajaxUrl += ajaxUrl.endsWith('/') ? urlAppendix : '/' + urlAppendix
+    }
+    const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
 
     if (channelPageResponse.error) {
-      // Try again as a user channel
-      const userUrl = `https://www.youtube.com/user/${channelId}/${urlAppendix}`
-      channelPageResponse = await this.makeChannelRequest(userUrl)
-      workedUrl = 2
-      if (channelPageResponse.error) {
-        const cUrl = `https://www.youtube.com/c/${channelId}/${urlAppendix}`
-        channelPageResponse = await this.makeChannelRequest(cUrl)
-        workedUrl = 3
-        if (channelPageResponse.error) {
-          return Promise.reject(channelPageResponse.message)
-        }
-      }
+      return Promise.reject(channelPageResponse.message)
     }
-    return { response: channelPageResponse, channelIdType: workedUrl }
+    return { response: channelPageResponse, channelIdType: cType }
+  }
+
+  async performChannelPageRequestWithFallbacks(channelId, urlAppendix) {
+    return await this.performChannelUrlRequest(channelId, urlAppendix).catch(async _ => {
+      return await this.performChannelTagRequest(channelId, urlAppendix).catch(async _ => {
+        return await this.performUserUrlRequest(channelId, urlAppendix).catch(async _ => {
+          return await this.performCUrlRequest(channelId, urlAppendix).catch(async _ => {
+            return await this.performChannelRequest(channelId, urlAppendix).catch(async e => {
+              return Promise.reject(e)
+            })
+          })
+        })
+      })
+    })
   }
 
   async performChannelUrlRequest(channelId, urlAppendix) {
-    const ajaxUrl = `https://www.youtube.com/channel/${channelId}/${urlAppendix}`
-
-    const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
-
-    if (channelPageResponse.error) {
-      return Promise.reject(channelPageResponse.message)
-    }
-    return { response: channelPageResponse, channelIdType: 1 }
+    const ajaxUrl = `https://www.youtube.com/channel/${channelId}/`
+    return await this.performChannelRequest(ajaxUrl, urlAppendix, 1)
   }
 
   async performUserUrlRequest(channelId, urlAppendix) {
-    const ajaxUrl = `https://www.youtube.com/user/${channelId}/${urlAppendix}`
-
-    const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
-
-    if (channelPageResponse.error) {
-      return Promise.reject(channelPageResponse.message)
-    }
-    return { response: channelPageResponse, channelIdType: 2 }
+    const ajaxUrl = `https://www.youtube.com/user/${channelId}/`
+    return await this.performChannelRequest(ajaxUrl, urlAppendix, 2)
   }
 
   async performCUrlRequest(channelId, urlAppendix) {
-    const ajaxUrl = `https://www.youtube.com/c/${channelId}/${urlAppendix}`
+    const ajaxUrl = `https://www.youtube.com/c/${channelId}/`
+    return await this.performChannelRequest(ajaxUrl, urlAppendix, 3)
+  }
 
-    const channelPageResponse = await this.makeChannelRequest(ajaxUrl)
-
-    if (channelPageResponse.error) {
-      return Promise.reject(channelPageResponse.message)
-    }
-    return { response: channelPageResponse, channelIdType: 3 }
+  async performChannelTagRequest(channelTag, urlAppendix) {
+    const ajaxUrl = `https://www.youtube.com/@${channelTag}/`
+    return await this.performChannelRequest(ajaxUrl, urlAppendix, 4)
   }
 
   static findTab(tabs) {

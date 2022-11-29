@@ -6,7 +6,9 @@ declare module "yt-channel-info" {
         Default = 0,
         ChannelId,
         LegacyName,
-        CustomURL
+        CustomURL,
+        ChannelTag,
+        ChannelUrl
     }
 
     /**
@@ -259,7 +261,7 @@ declare module "yt-channel-info" {
         static searchChannelMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<Video>>;
 
         static getChannelLivestreams(payload: ChannelLivestreamsPayload): ChannelInfoResponse<Video>;
-        
+
         static getChannelShorts(payload: ChannelShortsPayload): ChannelInfoResponse<Video>;
 
         static getRelatedChannelsMore(payload: ContinuationPayload): Promise<ChannelInfoResponseContinuation<RelatedChannel>>;
