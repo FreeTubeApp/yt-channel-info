@@ -1,3 +1,6 @@
+# No Longer Maintained
+This repository is no longer maintained. The functionality of this project has been merged into [YouTube.js](https://github.com/LuanRT/YouTube.js). We highly recommend switching to that package in order to have the latest functionality. We cannot promise stability if you continue to use this package as is.
+
 # YouTube Channel Info NodeJS Documentation
 This library is designed to receive channel data from YouTube without accessing the official API.
 <br />
